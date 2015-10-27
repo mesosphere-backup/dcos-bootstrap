@@ -6,6 +6,9 @@ Via Ansible and CloudFormation
 
 ## Usage
 
+For bootstrap/destroy to work, you need to export `AWS_*` environment variables
+first.
+
 ### Bootstrap DCOS cluster
 
     make bootstrap
