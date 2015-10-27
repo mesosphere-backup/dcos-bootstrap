@@ -1,0 +1,19 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Launch Mesosphere DCOS cluster
+      cloudformation:
+        stack_name: dcos
+        state: present
+        template_url: https://s3.amazonaws.com/downloads.mesosphere.io/dcos/stable/cloudformation/single-master.cloudformation.json
+        template_parameters:
+          AcceptEULA: "Yes"
+          AdminLocation: 0.0.0.0/0
+          KeyName: admin
+          PublicSlaveInstanceCount: 1
+          SlaveInstanceCount: 5
+      register: dcos_stack
+
+    - set_fact:
+        dcos_stack: "{{ dcos_stack.stack_outputs }}"

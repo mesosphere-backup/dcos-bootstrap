@@ -1,0 +1,10 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Destroy Mesosphere DCOS cluster
+      cloudformation:
+        stack_name: dcos
+        state: absent
+        template_url: https://s3.amazonaws.com/downloads.mesosphere.io/dcos/stable/cloudformation/single-master.cloudformation.json
+      ignore_errors: True
