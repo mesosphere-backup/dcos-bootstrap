@@ -6,9 +6,13 @@ Via Ansible and CloudFormation
 
 ## Usage
 
-For bootstrap or destroy to work, you need to export the environment variables
-`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` first. The AWS region is
-configured in `vars/aws.yml`.
+In order to bootstrap or destroy a DCOS cluster, you need to export these
+environment variables:
+
+* `AWS_REGION`
+* `AWS_ACCESS_KEY_ID`
+* `AWS_SECRET_ACCESS_KEY`
+* `DCOS_PUBLIC_KEY` (optional; path to SSH public key)
 
 ### Bootstrap DCOS cluster
 

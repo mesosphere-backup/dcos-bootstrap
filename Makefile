@@ -1,10 +1,14 @@
+AWS_REGION      ?= eu-west-1
 DCOS_PUBLIC_KEY ?= ~/.ssh/id_rsa.pub
+
 bootstrap:
 	ansible-playbook -v dcos.yml \
+		-e aws_region="$(AWS_REGION)" \
 		-e dcos_public_key="$(DCOS_PUBLIC_KEY)"
 
 destroy:
-	ansible-playbook -v dcos_destroy.yml
+	ansible-playbook -v dcos_destroy.yml \
+		-e aws_region="$(AWS_REGION)"
 
 TEMPLATES_ROOT = https://s3.amazonaws.com/downloads.mesosphere.io/dcos
 sync:
