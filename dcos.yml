@@ -23,3 +23,5 @@
           PublicSlaveInstanceCount: 1
           SlaveInstanceCount: 3
       register: dcos_stack
+
+    - debug: msg="Open DCOS web interface at http://{{ dcos_stack.stack_outputs.DnsAddress }}"
