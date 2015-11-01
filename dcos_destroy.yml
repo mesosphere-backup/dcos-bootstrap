@@ -1,10 +1,13 @@
 - hosts: localhost
   connection: local
   gather_facts: False
+  vars_files:
+    - vars/aws.yml
   tasks:
-    - name: Destroy Mesosphere DCOS cluster
+    - name: Delete Mesosphere DCOS cluster
       cloudformation:
         stack_name: dcos
         state: absent
+        region: "{{ aws_region }}"
         template_url: https://s3.amazonaws.com/downloads.mesosphere.io/dcos/stable/cloudformation/single-master.cloudformation.json
       ignore_errors: True

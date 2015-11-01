@@ -2,12 +2,13 @@
 
 Via Ansible and CloudFormation
 
-**Note: This is just a "quick start" and not meant to be used in production.**
+**Note: This is just a quickstart and not meant to be used in production.**
 
 ## Usage
 
-For bootstrap/destroy to work, you need to export `AWS_*` environment variables
-first.
+For bootstrap or destroy to work, you need to export the environment variables
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` first. The AWS region is
+configured in `vars/aws.yml`.
 
 ### Bootstrap DCOS cluster
 

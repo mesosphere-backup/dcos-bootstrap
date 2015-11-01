@@ -1,16 +1,20 @@
 - hosts: localhost
   connection: local
   gather_facts: False
+  vars_files:
+    - vars/aws.yml
   tasks:
     - name: Create EC2 key pair
       ec2_key:
         name: dcos_admin
+        region: "{{ aws_region }}"
       register: dcos_key_pair
 
     - name: Create Mesosphere DCOS cluster
       cloudformation:
         stack_name: dcos
         state: present
+        region: "{{ aws_region }}"
         template_url: https://s3.amazonaws.com/downloads.mesosphere.io/dcos/stable/cloudformation/single-master.cloudformation.json
         template_parameters:
           AcceptEULA: "Yes"
