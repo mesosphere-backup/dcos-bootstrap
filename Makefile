@@ -1,5 +1,7 @@
+DCOS_PUBLIC_KEY ?= ~/.ssh/id_rsa.pub
 bootstrap:
-	ansible-playbook -v dcos.yml
+	ansible-playbook -v dcos.yml \
+		-e dcos_public_key="$(DCOS_PUBLIC_KEY)"
 
 destroy:
 	ansible-playbook -v dcos_destroy.yml
