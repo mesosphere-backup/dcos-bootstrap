@@ -10,4 +10,9 @@
         state: absent
         region: "{{ aws_region }}"
         template_url: https://s3.amazonaws.com/downloads.mesosphere.io/dcos/stable/cloudformation/single-master.cloudformation.json
-      ignore_errors: True
+
+    - name: Delete EC2 key pair
+      ec2_key:
+        name: dcos_admin
+        state: absent
+        region: "{{ aws_region }}"
