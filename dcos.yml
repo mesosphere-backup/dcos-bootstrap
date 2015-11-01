@@ -21,7 +21,7 @@
           AdminLocation: 0.0.0.0/0
           KeyName: dcos_admin
           PublicSlaveInstanceCount: 1
-          SlaveInstanceCount: 3
+          SlaveInstanceCount: 5
       register: dcos_stack
 
     - debug: msg="Open DCOS web interface at http://{{ dcos_stack.stack_outputs.DnsAddress }}"
