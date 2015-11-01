@@ -1,6 +1,4 @@
-# Set up Mesosphere DCOS on Amazon AWS
-
-Via Ansible and CloudFormation
+# Install Mesosphere DCOS on AWS using a single command
 
 **Note: This is just a quickstart and not meant to be used in production.**
 
@@ -22,10 +20,12 @@ environment variables:
 
     make destroy
 
-### Download current CloudFormation templates for inspection
+### Download CloudFormation templates for inspection
 
     make sync
 
 ## More information
 
-http://docs.mesosphere.com/install/awscluster/
+* https://mesosphere.com/amazon/setup/
+* https://docs.mesosphere.com/install/awscluster/
+* https://docs.mesosphere.com/install/removeaws/
