@@ -4,6 +4,12 @@
   vars_files:
     - vars/aws.yml
   tasks:
+    - name: Delete S3 bucket
+      s3:
+        bucket: "{{ lookup('cloudformation', aws_region + '/dcos/resource_id/ExhibitorS3Bucket') }}"
+        mode: delete
+        region: "{{ aws_region }}"
+
     - name: Delete Mesosphere DCOS cluster
       cloudformation:
         stack_name: dcos
