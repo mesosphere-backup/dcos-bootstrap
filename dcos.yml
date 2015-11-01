@@ -2,7 +2,12 @@
   connection: local
   gather_facts: False
   tasks:
-    - name: Launch Mesosphere DCOS cluster
+    - name: Create EC2 key pair
+      ec2_key:
+        name: dcos_admin
+      register: dcos_key_pair
+
+    - name: Create Mesosphere DCOS cluster
       cloudformation:
         stack_name: dcos
         state: present
@@ -10,10 +15,7 @@
         template_parameters:
           AcceptEULA: "Yes"
           AdminLocation: 0.0.0.0/0
-          KeyName: admin
+          KeyName: dcos_admin
           PublicSlaveInstanceCount: 1
           SlaveInstanceCount: 5
       register: dcos_stack
-
-    - set_fact:
-        dcos_stack: "{{ dcos_stack.stack_outputs }}"
