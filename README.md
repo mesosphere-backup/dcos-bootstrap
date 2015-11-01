@@ -10,11 +10,23 @@ environment variables:
 * `AWS_REGION`
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
-* `DCOS_PUBLIC_KEY` (optional; path to SSH public key)
 
 ### Bootstrap DCOS cluster
 
+This will set up a working Mesosphere DCOS cluster on AWS using Ansible and
+CloudFormation:
+
     make bootstrap
+
+You might also specify a custom SSH key for logging into DCOS cluster instances:
+
+    make bootstrap DCOS_PUBLIC_KEY=~/.ssh/dcos.key.pub
+
+When done, the following line will tell you the URL of the DCOS web interface:
+
+    ok: [localhost] => {
+        "msg": "Open DCOS web interface at http://..."
+    }
 
 ### Destroy DCOS cluster
 
