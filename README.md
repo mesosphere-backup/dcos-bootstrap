@@ -52,14 +52,14 @@ Launch DCOS in HA setup with multiple master nodes:
 
 ### Use DCOS CLI
 
-After running `make bootstrap`, you can use `script/dcos` to remotely manage
-your cluster. The script is a convenience wrapper around the `dcos` tool.
+After running `make bootstrap`, you can use the `./dcos` script to remotely
+manage your cluster. The script is a convenience wrapper around the `dcos` tool.
 
 This example shows how to use the CLI to install and use Kubernetes:
 
-    script/dcos package update
-    script/dcos package install --yes kubernetes
-    script/dcos kubectl run nginx --image=nginx
+    ./dcos package update
+    ./dcos package install --yes kubernetes
+    ./dcos kubectl run nginx --image=nginx
 
 ### Destroy DCOS cluster
 
