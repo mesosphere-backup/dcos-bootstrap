@@ -1,0 +1,9 @@
+#!/bin/bash
+# Small wrapper around the DCOS command-line tool
+
+# Trick dcos into using our tmp folder for everything. Unfortunately, setting
+# DCOS_CONFIG doesn't seem to work for subcommands, which still get installed
+# to $HOME.
+export HOME="$PWD/tmp"
+
+exec venv/bin/dcos "$@"

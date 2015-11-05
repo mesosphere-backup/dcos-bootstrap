@@ -24,4 +24,15 @@
           SlaveInstanceCount: 5
       register: dcos_stack
 
-    - debug: msg="Open DCOS web interface at http://{{ dcos_stack.stack_outputs.DnsAddress }}"
+    - set_fact:
+        dcos_url: "http://{{ dcos_stack.stack_outputs.DnsAddress }}"
+
+    - name: Create tmp folder
+      file: path=tmp/.dcos state=directory mode=0755
+
+    - name: Generate DCOS CLI configuration
+      template:
+        src: templates/dcos.toml.j2
+        dest: tmp/.dcos/dcos.toml
+
+    - debug: msg="Open DCOS web interface at {{ dcos_url }}"

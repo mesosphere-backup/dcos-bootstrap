@@ -1,0 +1,9 @@
+[core]
+dcos_url = "{{ dcos_url }}"
+reporting = false
+ssl_verify = "false"
+timeout = 5
+email = "user@domain.com"
+[package]
+cache = "~/.dcos/cache"
+sources = [ "https://github.com/mesosphere/multiverse/archive/version-1.x.zip", "https://github.com/mesosphere/universe/archive/version-1.x.zip",]

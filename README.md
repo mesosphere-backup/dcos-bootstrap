@@ -38,6 +38,17 @@ Launch DCOS in HA setup with multiple master nodes:
 
     make bootstrap DCOS_MASTER_SETUP=multi-master
 
+### Use DCOS CLI
+
+After running `make bootstrap`, you can use `script/dcos` to remotely manage
+your cluster. The script is a convenience wrapper around the `dcos` tool.
+
+This example shows how to use the CLI to install and use Kubernetes:
+
+    script/dcos package update
+    script/dcos package install --yes kubernetes
+    script/dcos kubectl run nginx --image=nginx
+
 ### Destroy DCOS cluster
 
     make destroy
@@ -50,4 +61,4 @@ Launch DCOS in HA setup with multiple master nodes:
 
 * https://mesosphere.com/amazon/setup/
 * https://docs.mesosphere.com/install/awscluster/
-* https://docs.mesosphere.com/install/removeaws/
+* https://docs.mesosphere.com/using/cli/
