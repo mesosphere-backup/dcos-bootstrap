@@ -34,6 +34,10 @@ Launch the early access release of DCOS instead of the stable release:
 
     make bootstrap DCOS_CHANNEL=EarlyAccess
 
+Launch DCOS in HA setup with multiple master nodes:
+
+    make bootstrap DCOS_MASTER_SETUP=multi-master
+
 ### Destroy DCOS cluster
 
     make destroy

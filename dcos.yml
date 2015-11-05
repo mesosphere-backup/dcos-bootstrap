@@ -15,7 +15,7 @@
         stack_name: dcos
         state: present
         region: "{{ aws_region }}"
-        template_url: "https://s3.amazonaws.com/downloads.mesosphere.io/dcos/{{ dcos_channel }}/cloudformation/single-master.cloudformation.json"
+        template_url: "https://s3.amazonaws.com/downloads.mesosphere.io/dcos/{{ dcos_channel }}/cloudformation/{{ dcos_master_setup }}.cloudformation.json"
         template_parameters:
           AcceptEULA: "Yes"
           AdminLocation: 0.0.0.0/0

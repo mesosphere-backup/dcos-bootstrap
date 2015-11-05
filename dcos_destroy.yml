@@ -13,7 +13,7 @@
         stack_name: dcos
         state: absent
         region: "{{ aws_region }}"
-        template_url: "https://s3.amazonaws.com/downloads.mesosphere.io/dcos/{{ dcos_channel }}/cloudformation/single-master.cloudformation.json"
+        template_url: "https://s3.amazonaws.com/downloads.mesosphere.io/dcos/{{ dcos_channel }}/cloudformation/{{ dcos_master_setup }}.cloudformation.json"
 
     - name: Delete EC2 key pair
       ec2_key:

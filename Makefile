@@ -1,17 +1,20 @@
-AWS_REGION      ?= eu-west-1
-DCOS_PUBLIC_KEY ?= ~/.ssh/id_rsa.pub
-DCOS_CHANNEL    ?= stable
+AWS_REGION        ?= eu-west-1
+DCOS_PUBLIC_KEY   ?= ~/.ssh/id_rsa.pub
+DCOS_CHANNEL      ?= stable
+DCOS_MASTER_SETUP ?= single-master
 
 bootstrap: venv
 	venv/bin/ansible-playbook -v dcos.yml \
 		-e aws_region="$(AWS_REGION)" \
 		-e dcos_public_key="$(DCOS_PUBLIC_KEY)" \
-		-e dcos_channel="$(DCOS_CHANNEL)"
+		-e dcos_channel="$(DCOS_CHANNEL)" \
+		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
 destroy: venv
 	venv/bin/ansible-playbook -v dcos_destroy.yml \
 		-e aws_region="$(AWS_REGION)" \
-		-e dcos_channel="$(DCOS_CHANNEL)"
+		-e dcos_channel="$(DCOS_CHANNEL)" \
+		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
 venv:
 	virtualenv venv
