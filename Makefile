@@ -4,14 +4,14 @@ DCOS_CHANNEL      ?= stable
 DCOS_MASTER_SETUP ?= single-master
 
 bootstrap: venv
-	venv/bin/ansible-playbook -v dcos.yml \
+	venv/bin/ansible-playbook -v bootstrap.yml \
 		-e aws_region="$(AWS_REGION)" \
 		-e dcos_public_key="$(DCOS_PUBLIC_KEY)" \
 		-e dcos_channel="$(DCOS_CHANNEL)" \
 		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
 destroy: venv
-	venv/bin/ansible-playbook -v dcos_destroy.yml \
+	venv/bin/ansible-playbook -v destroy.yml \
 		-e aws_region="$(AWS_REGION)" \
 		-e dcos_channel="$(DCOS_CHANNEL)" \
 		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
