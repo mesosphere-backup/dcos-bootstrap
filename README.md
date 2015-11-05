@@ -1,11 +1,23 @@
 # Install Mesosphere DCOS on AWS using a single command
 
-**Note: This is just a quickstart and not meant to be used in production.**
+**Note: This is just a quickstart and not meant to be used in production (yet).**
+
+## Installation
+
+Clone this repository and run one of the Make targets as documented below:
+
+    git clone https://github.com/mlafeldt/dcos-bootstrap
+    cd dcos-bootstrap/
+    make ...
+
+Besides Make, you will also need Python and virtualenv.
 
 ## Usage
 
+### AWS configuration
+
 In order to bootstrap or destroy a DCOS cluster, you need to export these
-environment variables:
+environment variables first:
 
 * `AWS_REGION`
 * `AWS_ACCESS_KEY_ID`
@@ -51,9 +63,15 @@ This example shows how to use the CLI to install and use Kubernetes:
 
 ### Destroy DCOS cluster
 
+When you no longer need your cluster, you can delete it this way:
+
     make destroy
 
-### Download CloudFormation templates for inspection
+### Sync CloudFormation templates
+
+This will sync the CloudFormation templates in `cloudformation/` with the
+upstream templates used by `make bootstrap`. This is useful for inspection and
+for keeping track of changes.
 
     make sync
 
