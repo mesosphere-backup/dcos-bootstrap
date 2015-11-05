@@ -3,7 +3,7 @@
 
 # Trick dcos into using our tmp folder for everything. Unfortunately, setting
 # DCOS_CONFIG doesn't seem to work for subcommands, which still get installed
-# to $HOME.
+# to $HOME. This is the workaround.
 export HOME="$PWD/tmp"
 
 exec venv/bin/dcos "$@"
