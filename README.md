@@ -18,15 +18,21 @@ CloudFormation:
 
     make bootstrap
 
-You might also specify a custom SSH key for logging into DCOS cluster instances:
-
-    make bootstrap DCOS_PUBLIC_KEY=~/.ssh/dcos.key.pub
-
 When done, the following line will tell you the URL of the DCOS web interface:
 
     ok: [localhost] => {
         "msg": "Open DCOS web interface at http://..."
     }
+
+There are a couple of settings you might want to change:
+
+Configure a custom SSH key for logging into DCOS cluster instances:
+
+    make bootstrap DCOS_PUBLIC_KEY=~/.ssh/dcos.key.pub
+
+Launch the early access release of DCOS instead of the stable release:
+
+    make bootstrap DCOS_CHANNEL=EarlyAccess
 
 ### Destroy DCOS cluster
 
