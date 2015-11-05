@@ -53,7 +53,8 @@ Launch DCOS in HA setup with multiple master nodes:
 ### Use DCOS CLI
 
 After running `make bootstrap`, you can use the `./dcos` script to remotely
-manage your cluster. The script is a convenience wrapper around the `dcos` tool.
+manage your cluster. The script is a convenience wrapper around the `dcos` tool
+provided by Mesosphere.
 
 This example shows how to use the CLI to install and use Kubernetes:
 
@@ -70,8 +71,8 @@ When you no longer need your cluster, you can delete it this way:
 ### Sync CloudFormation templates
 
 This will sync the CloudFormation templates in `cloudformation/` with the
-upstream templates used by `make bootstrap`. This is useful for inspection and
-for keeping track of changes.
+upstream templates used by `make bootstrap`. Useful for inspection and for
+keeping track of changes.
 
     make sync
 
