@@ -1,6 +1,9 @@
 # Install Mesosphere DCOS on AWS using a single command
 
-**Note: This is just a quickstart and not meant to be used in production (yet).**
+The goal of this project is to get you started with the *Mesosphere DCOS
+Community Edition*. To make use of it, you need to accept the [EULA].
+
+**Note: Nothing here is meant to be used in production!**
 
 ## Installation
 
@@ -81,3 +84,5 @@ keeping track of changes.
 * https://mesosphere.com/amazon/setup/
 * https://docs.mesosphere.com/install/awscluster/
 * https://docs.mesosphere.com/using/cli/
+
+[EULA]: https://docs.mesosphere.com/community-edition-eula/
