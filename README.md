@@ -84,9 +84,9 @@ In case you changed the default cluster name:
 
 ### Sync CloudFormation templates
 
-This will sync the CloudFormation templates in `cloudformation/` with the
-upstream templates used by `make bootstrap`. Useful for inspection and for
-keeping track of changes.
+This will download the current CloudFormation templates provided by Mesosphere
+from S3 to `cloudformation/`. Useful for inspection and for keeping track of
+infrastructure changes.
 
     make sync
 
