@@ -34,5 +34,3 @@
       template:
         src: templates/dcos.toml.j2
         dest: tmp/.dcos/dcos.toml
-
-    - debug: msg="Open DCOS web interface at {{ dcos_url }}"

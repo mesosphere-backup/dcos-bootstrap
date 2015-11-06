@@ -16,6 +16,9 @@ destroy: venv
 		-e dcos_channel="$(DCOS_CHANNEL)" \
 		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
+web:
+	@open $$(./dcos config show core.dcos_url)
+
 venv:
 	virtualenv venv
 	venv/bin/pip install -q -r requirements.txt

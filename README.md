@@ -37,12 +37,6 @@ CloudFormation:
 
     make bootstrap
 
-When done, the following line will tell you the URL of the DCOS web interface:
-
-    ok: [localhost] => {
-        "msg": "Open DCOS web interface at http://..."
-    }
-
 There are a couple of settings you might want to change:
 
 Configure a custom SSH key for logging into DCOS cluster instances:
@@ -57,9 +51,16 @@ Launch DCOS in HA setup with multiple master nodes:
 
     make bootstrap DCOS_MASTER_SETUP=multi-master
 
+### Open DCOS web interface
+
+After running `make bootstrap`, you can open the fancy DCOS web interface in
+your browser:
+
+    make web
+
 ### Use DCOS CLI
 
-After running `make bootstrap`, you can use the `./dcos` script to remotely
+After running `make bootstrap`, you can also use the `./dcos` script to remotely
 manage your cluster. The script is a convenience wrapper around the `dcos` tool
 provided by Mesosphere.
 
