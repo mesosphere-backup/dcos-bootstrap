@@ -4,7 +4,7 @@
   tasks:
     - name: Delete S3 bucket
       s3:
-        bucket: "{{ lookup('cloudformation', aws_region + '/dcos/resource_id/ExhibitorS3Bucket') }}"
+        bucket: "{{ lookup('cloudformation', aws_region + '/' + dcos_cluster_name + '/resource_id/ExhibitorS3Bucket') }}"
         mode: delete
         region: "{{ aws_region }}"
 
