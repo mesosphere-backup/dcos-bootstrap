@@ -10,7 +10,7 @@
 
     - name: Delete Mesosphere DCOS cluster
       cloudformation:
-        stack_name: dcos
+        stack_name: "{{ dcos_cluster_name }}"
         state: absent
         region: "{{ aws_region }}"
         template_url: "https://s3.amazonaws.com/downloads.mesosphere.io/dcos/{{ dcos_channel }}/cloudformation/{{ dcos_master_setup }}.cloudformation.json"

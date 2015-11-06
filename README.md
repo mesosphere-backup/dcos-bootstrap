@@ -39,17 +39,17 @@ CloudFormation:
 
 There are a couple of settings you might want to change:
 
-Configure a custom SSH key for logging into DCOS cluster instances:
+* `DCOS_CLUSTER_NAME` - Name of DCOS cluster (and CloudFormation stack)
+* `DCOS_PUBLIC_KEY` - Path to SSH key for logging into DCOS cluster instances
+* `DCOS_ADMIN_LOCATION` - IP range to whitelist for admin access
+* `DCOS_WORKER_NODES` - Number of worker nodes to launch
+* `DCOS_PUBLIC_WORKER_NODES` - Number of public worker nodes to launch
+* `DCOS_CHANNEL` - Launch `stable` or `EarlyAccess` release of DCOS
+* `DCOS_MASTER_SETUP` - Launch DCOS in `single-master` or `multi-master` HA setup
 
-    make bootstrap DCOS_PUBLIC_KEY=~/.ssh/dcos.key.pub
+Here's how to specify different settings:
 
-Launch the early access release of DCOS instead of the stable release:
-
-    make bootstrap DCOS_CHANNEL=EarlyAccess
-
-Launch DCOS in HA setup with multiple master nodes:
-
-    make bootstrap DCOS_MASTER_SETUP=multi-master
+    make bootstrap DCOS_CLUSTER_NAME=dcos-test DCOS_CHANNEL=EarlyAccess DCOS_WORKER_NODES=10
 
 ### Open DCOS web interface
 
@@ -75,6 +75,10 @@ This example shows how to use the CLI to install and use Kubernetes:
 When you no longer need your cluster, you can delete it this way:
 
     make destroy
+
+In case you changed the default cluster name:
+
+    make destroy DCOS_CLUSTER_NAME=...
 
 ### Sync CloudFormation templates
 

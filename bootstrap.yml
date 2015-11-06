@@ -12,22 +12,22 @@
 
     - name: Create Mesosphere DCOS cluster
       cloudformation:
-        stack_name: dcos
+        stack_name: "{{ dcos_cluster_name }}"
         state: present
         region: "{{ aws_region }}"
         template_url: "https://s3.amazonaws.com/downloads.mesosphere.io/dcos/{{ dcos_channel }}/cloudformation/{{ dcos_master_setup }}.cloudformation.json"
         template_parameters:
           AcceptEULA: "Yes"
-          AdminLocation: 0.0.0.0/0
+          AdminLocation: "{{ dcos_admin_location }}"
           KeyName: dcos_admin
-          PublicSlaveInstanceCount: 1
-          SlaveInstanceCount: 5
+          SlaveInstanceCount: "{{ dcos_worker_nodes }}"
+          PublicSlaveInstanceCount: "{{ dcos_public_worker_nodes }}"
       register: dcos_stack
 
     - set_fact:
         dcos_url: "http://{{ dcos_stack.stack_outputs.DnsAddress }}"
 
-    - name: Create tmp folder
+    - name: Create tmp folder for DCOS CLI
       file: path=tmp/.dcos state=directory mode=0755
 
     - name: Generate DCOS CLI configuration
