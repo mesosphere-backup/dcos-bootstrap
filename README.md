@@ -1,10 +1,12 @@
 # Install Mesosphere DCOS on AWS using a single command
 
-The goal of this project is to get you started with the *Mesosphere DCOS
-Community Edition* in as few steps as possible.
+The project's goal is to get you started with the *Mesosphere DCOS Community
+Edition* on AWS with as few steps as possible. Rather than following the
+official [AWS setup guide], you can use the provided tooling to launch a DCOS
+cluster with a single command -- and delete it just as easily.
 
-Nothing here is meant to be used in production; that's what the [DCOS Enterprise
-Edition] is for.
+Note: Nothing here is meant to be used in production; that's what the [DCOS
+Enterprise Edition] is for.
 
 Disclaimer: If you use this project, you are agreeing to stick to the rules of
 the [Mesosphere DCOS Community Edition EULA].
@@ -61,7 +63,7 @@ your browser:
 ### Use DCOS CLI
 
 After running `make bootstrap`, you can also use the `./dcos` script to remotely
-manage your cluster. The script is a convenience wrapper around the `dcos` tool
+manage your cluster. The script is a convenience wrapper around the [dcos tool]
 provided by Mesosphere.
 
 This example shows how to use the CLI to install and use Kubernetes:
@@ -88,12 +90,8 @@ keeping track of changes.
 
     make sync
 
-## More information
 
-* https://mesosphere.com/amazon/setup/
-* https://docs.mesosphere.com/install/awscluster/
-* https://docs.mesosphere.com/using/cli/
-
-
+[AWS setup guide]: https://docs.mesosphere.com/install/awscluster/
 [DCOS Enterprise Edition]: https://mesosphere.com/product/
 [Mesosphere DCOS Community Edition EULA]: https://docs.mesosphere.com/community-edition-eula/
+[dcos tool]: https://docs.mesosphere.com/using/cli/
