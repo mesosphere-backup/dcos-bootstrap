@@ -1,7 +1,7 @@
 AWS_REGION ?= eu-west-1
 
 DCOS_CLUSTER_NAME        ?= dcos
-DCOS_PUBLIC_KEY          ?= ~/.ssh/id_rsa.pub
+DCOS_ADMIN_KEY           ?= ~/.ssh/id_rsa.pub
 DCOS_ADMIN_LOCATION      ?= 0.0.0.0/0
 DCOS_WORKER_NODES        ?= 5
 DCOS_PUBLIC_WORKER_NODES ?= 1
@@ -12,7 +12,7 @@ bootstrap: venv
 	venv/bin/ansible-playbook -v bootstrap.yml \
 		-e aws_region="$(AWS_REGION)" \
 		-e dcos_cluster_name="$(DCOS_CLUSTER_NAME)" \
-		-e dcos_public_key="$(DCOS_PUBLIC_KEY)" \
+		-e dcos_admin_key="$(DCOS_ADMIN_KEY)" \
 		-e dcos_admin_location="$(DCOS_ADMIN_LOCATION)" \
 		-e dcos_worker_nodes="$(DCOS_WORKER_NODES)" \
 		-e dcos_public_worker_nodes="$(DCOS_PUBLIC_WORKER_NODES)" \

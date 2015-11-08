@@ -42,7 +42,7 @@ CloudFormation:
 There are a couple of settings you might want to change:
 
 * `DCOS_CLUSTER_NAME` - Name of DCOS cluster (and CloudFormation stack)
-* `DCOS_PUBLIC_KEY` - Path to SSH key for logging into DCOS cluster instances
+* `DCOS_ADMIN_KEY` - Path to public SSH key to be added to cluster instances
 * `DCOS_ADMIN_LOCATION` - IP range to whitelist for admin access
 * `DCOS_WORKER_NODES` - Number of worker nodes to launch
 * `DCOS_PUBLIC_WORKER_NODES` - Number of public worker nodes to launch

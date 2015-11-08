@@ -8,7 +8,7 @@
         state: present
         region: "{{ aws_region }}"
         key_material: "{{ item }}"
-      with_file: dcos_public_key
+      with_file: dcos_admin_key
 
     - name: Create Mesosphere DCOS cluster
       cloudformation:
