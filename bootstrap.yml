@@ -34,3 +34,7 @@
       template:
         src: templates/dcos.toml.j2
         dest: tmp/.dcos/dcos.toml
+
+    - name: Validate DCOS CLI configuration
+      command: ./dcos config validate
+      changed_when: False
