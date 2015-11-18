@@ -1,5 +1,7 @@
 # Install Mesosphere DCOS on AWS using a single command
 
+**[Read this blog post to learn more about DCOS and dcos-bootstrap!][blog]**
+
 The project's goal is to get you started with the *Mesosphere DCOS Community
 Edition* on AWS with as few steps as possible. Rather than following the
 official [AWS setup guide], you can use the provided tooling to launch a DCOS
@@ -95,3 +97,4 @@ infrastructure changes.
 [DCOS Enterprise Edition]: https://mesosphere.com/product/
 [Mesosphere DCOS Community Edition EULA]: https://docs.mesosphere.com/community-edition-eula/
 [dcos tool]: https://docs.mesosphere.com/using/cli/
+[blog]: https://mlafeldt.github.io/blog/getting-started-with-the-mesosphere-dcos/
