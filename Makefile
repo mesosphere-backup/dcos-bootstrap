@@ -26,7 +26,7 @@ destroy: venv
 		-e dcos_channel="$(DCOS_CHANNEL)" \
 		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
-web:
+dashboard:
 	@open $$(./dcos config show core.dcos_url)
 
 venv:

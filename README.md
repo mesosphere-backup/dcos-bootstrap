@@ -60,7 +60,7 @@ Here's how to specify different settings:
 After running `make bootstrap`, you can open the fancy DCOS web interface in
 your browser:
 
-    make web
+    make dashboard
 
 ### Use DCOS CLI
 
