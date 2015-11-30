@@ -1,0 +1,16 @@
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Get list of installed DCOS packages
+      command: ./dcos package list
+      register: package_list
+      ignore_errors: True
+
+    - name: Update DCOS package index
+      command: ./dcos package update
+      when: "'/kubernetes' not in package_list.stdout"
+
+    - name: Install Kubernetes on DCOS
+      command: ./dcos package install --yes kubernetes
+      when: "'/kubernetes' not in package_list.stdout"

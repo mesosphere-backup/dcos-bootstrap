@@ -26,6 +26,9 @@ destroy: venv
 		-e dcos_channel="$(DCOS_CHANNEL)" \
 		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
+kubernetes: venv
+	venv/bin/ansible-playbook -v kubernetes.yml
+
 dashboard:
 	@open $$(./dcos config show core.dcos_url)
 

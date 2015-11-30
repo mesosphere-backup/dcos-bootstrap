@@ -64,14 +64,20 @@ your browser:
 
 ### Use DCOS CLI
 
-After running `make bootstrap`, you can also use the `./dcos` script to remotely
+After bootstrapping DCOS, you can also use the `./dcos` script to remotely
 manage your cluster. The script is a convenience wrapper around the [dcos tool]
-provided by Mesosphere.
+provided by Mesosphere. Run `./dcos` without parameters to get a list of all
+available commands.
 
-This example shows how to use the CLI to install and use Kubernetes:
+### Install Kubernetes
 
-    ./dcos package update
-    ./dcos package install --yes kubernetes
+This will deploy [Kubernetes] on top of DCOS:
+
+    make kubernetes
+
+Afterwards, run the `kubectl` subcommand to control the Kubernetes cluster
+manager. For example:
+
     ./dcos kubectl run nginx --image=nginx
 
 ### Destroy DCOS cluster
@@ -98,3 +104,4 @@ infrastructure changes.
 [Mesosphere DCOS Community Edition EULA]: https://docs.mesosphere.com/community-edition-eula/
 [dcos tool]: https://docs.mesosphere.com/using/cli/
 [blog]: https://mlafeldt.github.io/blog/getting-started-with-the-mesosphere-dcos/
+[Kubernetes]: http://kubernetes.io/
