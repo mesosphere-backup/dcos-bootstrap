@@ -11,6 +11,33 @@
       command: ./dcos package update
       when: "'/kubernetes' not in package_list.stdout"
 
+    - name: Install etcd-mesos cluster
+      command: ./dcos package install --yes etcd
+      when: "'/etcd' not in package_list.stdout"
+
+    - name: Wait until etcd is healthy
+      command: ./dcos marathon app show /etcd
+      register: etcd_status
+      until: (etcd_status.stdout|from_json)["tasksHealthy"] > 0
+      retries: 6
+      delay: 15
+
+    - name: Write Kubernetes configuration
+      copy:
+        content: >
+          {"kubernetes": {"etcd-mesos-framework-name": "etcd"}}
+        dest: tmp/kubernetes-options.json
+
     - name: Install Kubernetes on DCOS
-      command: ./dcos package install --yes kubernetes
+      command: ./dcos package install --yes --options=tmp/kubernetes-options.json kubernetes
       when: "'/kubernetes' not in package_list.stdout"
+
+    - name: Wait until Kubernetes is healthy
+      command: ./dcos marathon app show /kubernetes
+      register: kubernetes_status
+      until: (kubernetes_status.stdout|from_json)["tasksHealthy"] > 0
+      retries: 6
+      delay: 15
+
+    - name: Verify that kubectl works
+      command: ./dcos kubectl get pods --namespace=kube-system
