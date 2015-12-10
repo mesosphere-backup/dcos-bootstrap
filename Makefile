@@ -26,7 +26,7 @@ destroy: venv
 		-e dcos_channel="$(DCOS_CHANNEL)" \
 		-e dcos_master_setup="$(DCOS_MASTER_SETUP)"
 
-kubernetes: kubernetes-install kubernetes-env
+kubernetes: bootstrap kubernetes-install kubernetes-env
 
 kubernetes-install: venv
 	venv/bin/ansible-playbook -v kubernetes.yml
