@@ -1,4 +1,29 @@
 {
+  "Metadata": {
+    "DcosImageCommit": "19d355209269e8836c6b080e5e766f9ddb89aa8c",
+    "TemplateGenerationDate": "2016-04-19 07:57:20.497709"
+  },
+  "Description": "Launching the Mesosphere DCOS cluster",
+  "Outputs": {
+    "PublicSlaveDnsAddress": {
+      "Description": "Public slaves",
+      "Value": {
+        "Fn::GetAtt": [
+          "PublicSlaveLoadBalancer",
+          "DNSName"
+        ]
+      }
+    },
+    "DnsAddress": {
+      "Description": "Mesos Master",
+      "Value": {
+        "Fn::GetAtt": [
+          "ElasticLoadBalancer",
+          "DNSName"
+        ]
+      }
+    }
+  },
   "Conditions": {
     "RegionIsUsEast1": {
       "Fn::Equals": [
@@ -9,349 +34,285 @@
       ]
     }
   },
-  "Mappings": {
-    "RegionToAmi": {
-      "us-gov-west-1": {
-        "stable": "ami-05bc0164"
-      },
-      "us-west-2": {
-        "stable": "ami-00ebfc61"
-      },
-      "eu-central-1": {
-        "stable": "ami-fdd4c791"
-      },
-      "sa-east-1": {
-        "stable": "ami-154af179"
-      },
-      "eu-west-1": {
-        "stable": "ami-55d20b26"
-      },
-      "ap-southeast-2": {
-        "stable": "ami-f35b0590"
-      },
-      "us-west-1": {
-        "stable": "ami-27553a47"
-      },
-      "ap-northeast-1": {
-        "stable": "ami-84e0c7ea"
-      },
-      "ap-southeast-1": {
-        "stable": "ami-da67a0b9"
-      },
-      "us-east-1": {
-        "stable": "ami-37bdc15d"
-      }
-    },
-    "Parameters": {
-      "SlaveInstanceType": {
-        "default": "m3.xlarge"
-      },
-      "MasterInstanceType": {
-        "default": "m3.xlarge"
-      },
-      "VPCSubnetRange": {
-        "default": "10.0.0.0/16"
-      },
-      "PrivateSubnetRange": {
-        "default": "10.0.0.0/22"
-      },
-      "PublicSlaveInstanceType": {
-        "default": "m3.xlarge"
-      },
-      "PublicSubnetRange": {
-        "default": "10.0.4.0/22"
-      },
-      "StackCreationTimeout": {
-        "default": "PT45M"
-      }
-    },
-    "NATAmi": {
-      "us-west-2": {
-        "default": "ami-bb69128b"
-      },
-      "eu-central-1": {
-        "default": "ami-204c7a3d"
-      },
-      "sa-east-1": {
-        "default": "ami-b972dba4"
-      },
-      "eu-west-1": {
-        "default": "ami-3760b040"
-      },
-      "ap-southeast-2": {
-        "default": "ami-996402a3"
-      },
-      "us-west-1": {
-        "default": "ami-2b2b296e"
-      },
-      "ap-northeast-1": {
-        "default": "ami-55c29e54"
-      },
-      "ap-southeast-1": {
-        "default": "ami-b082dae2"
-      },
-      "us-east-1": {
-        "default": "ami-4c9e4b24"
-      }
-    }
-  },
-  "Parameters": {
-    "KeyName": {
-      "Type": "AWS::EC2::KeyPair::KeyName",
-      "Description": "Required: Specify your AWS EC2 Key Pair."
-    },
-    "SlaveInstanceCount": {
-      "Default": "5",
-      "Type": "Number",
-      "Description": "Required: Specify the number of private agent nodes or accept the default."
-    },
-    "AcceptEULA": {
-      "Type": "String",
-      "Description": "\nRequired: Read the Mesosphere EULA and indicate agreement: https://docs.mesosphere.com/community-edition-eula/.",
-      "AllowedValues": [
-        "Yes"
-      ]
-    },
-    "AdminLocation": {
-      "MinLength": "9",
-      "AllowedPattern": "^([0-9]+\\.){3}[0-9]+\\/[0-9]+$",
-      "Description": "Optional: Specify the IP range to whitelist for access to the admin zone. Must be a valid CIDR.",
-      "MaxLength": "18",
-      "Default": "0.0.0.0/0",
-      "ConstraintDescription": "must be a valid CIDR.",
-      "Type": "String"
-    },
-    "PublicSlaveInstanceCount": {
-      "Default": "1",
-      "Type": "Number",
-      "Description": "Required: Specify the number of public agent nodes or accept the default."
-    }
-  },
-  "Description": "Launching the Mesosphere DCOS cluster",
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Outputs": {
-    "DnsAddress": {
-      "Value": {
-        "Fn::GetAtt": [
-          "ElasticLoadBalancer",
-          "DNSName"
-        ]
-      },
-      "Description": "Mesos Master"
-    },
-    "PublicSlaveDnsAddress": {
-      "Value": {
-        "Fn::GetAtt": [
-          "PublicSlaveLoadBalancer",
-          "DNSName"
-        ]
-      },
-      "Description": "Public slaves"
-    }
-  },
   "Resources": {
-    "OutboundNetworkAclEntry": {
-      "Properties": {
-        "RuleNumber": "100",
-        "Egress": "true",
-        "PortRange": {
-          "From": "0",
-          "To": "65535"
-        },
-        "NetworkAclId": {
-          "Ref": "PublicNetworkAcl"
-        },
-        "Protocol": "-1",
-        "RuleAction": "allow",
-        "CidrBlock": "0.0.0.0/0"
-      },
-      "Type": "AWS::EC2::NetworkAclEntry"
-    },
-    "InternetGateway": {
-      "DependsOn": "Vpc",
-      "Properties": {
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Public"
-          }
-        ]
-      },
-      "Type": "AWS::EC2::InternetGateway"
-    },
-    "MasterServerGroup": {
-      "DependsOn": "GatewayToInternet",
-      "Properties": {
-        "MinSize": 3,
-        "DesiredCapacity": 3,
-        "LoadBalancerNames": [
-          {
-            "Ref": "ElasticLoadBalancer"
-          },
-          {
-            "Ref": "InternalMasterLoadBalancer"
-          }
-        ],
-        "MaxSize": 3,
-        "AvailabilityZones": [
-          {
-            "Fn::GetAtt": [
-              "PublicSubnet",
-              "AvailabilityZone"
-            ]
-          }
-        ],
-        "LaunchConfigurationName": {
-          "Ref": "MasterLaunchConfig"
-        },
-        "VPCZoneIdentifier": [
-          {
-            "Ref": "PublicSubnet"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "role",
-            "Value": "mesos-master",
-            "PropagateAtLaunch": "true"
-          }
-        ]
-      },
-      "CreationPolicy": {
-        "ResourceSignal": {
-          "Count": 3,
-          "Timeout": {
-            "Fn::FindInMap": [
-              "Parameters",
-              "StackCreationTimeout",
-              "default"
-            ]
-          }
-        }
-      },
-      "Type": "AWS::AutoScaling::AutoScalingGroup"
-    },
-    "GatewayToInternet": {
-      "DependsOn": "InternetGateway",
-      "Properties": {
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "InternetGatewayId": {
-          "Ref": "InternetGateway"
-        }
-      },
-      "Type": "AWS::EC2::VPCGatewayAttachment"
-    },
-    "ExhibitorS3Bucket": {
-      "DeletionPolicy": "Retain",
-      "Type": "AWS::S3::Bucket"
-    },
-    "SlaveSecurityGroup": {
-      "Properties": {
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "GroupDescription": "Mesos Slaves"
-      },
-      "Type": "AWS::EC2::SecurityGroup"
-    },
-    "PrivateRoute": {
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PrivateRouteTable"
-        },
-        "InstanceId": {
-          "Ref": "NATInstance"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0"
-      },
-      "Type": "AWS::EC2::Route"
-    },
-    "PublicSlaveIngressSix": {
-      "Properties": {
-        "FromPort": "5052",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "udp",
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "PublicNetworkAcl": {
-      "Properties": {
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Public"
-          }
-        ]
-      },
-      "Type": "AWS::EC2::NetworkAcl"
-    },
-    "PublicSlaveIngressTwo": {
-      "Properties": {
-        "FromPort": "23",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "ToPort": "5050"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
     "PrivateOutboundNetworkAclEntry": {
       "Properties": {
         "RuleNumber": "100",
+        "RuleAction": "allow",
+        "Protocol": "-1",
         "Egress": "true",
         "PortRange": {
-          "From": "0",
-          "To": "65535"
+          "To": "65535",
+          "From": "0"
         },
         "NetworkAclId": {
           "Ref": "PrivateNetworkAcl"
         },
-        "Protocol": "-1",
-        "RuleAction": "allow",
         "CidrBlock": "0.0.0.0/0"
       },
       "Type": "AWS::EC2::NetworkAclEntry"
     },
-    "PublicSlaveToSlaveIngress": {
+    "PrivateInboundNetworkAclEntry": {
       "Properties": {
+        "RuleNumber": "100",
+        "RuleAction": "allow",
+        "Protocol": "-1",
+        "Egress": "false",
+        "PortRange": {
+          "To": "65535",
+          "From": "0"
+        },
+        "NetworkAclId": {
+          "Ref": "PrivateNetworkAcl"
+        },
+        "CidrBlock": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::NetworkAclEntry"
+    },
+    "SlaveInstanceProfile": {
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "SlaveRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::InstanceProfile"
+    },
+    "ElasticLoadBalancer": {
+      "Properties": {
+        "Listeners": [
+          {
+            "Protocol": "HTTP",
+            "InstancePort": "80",
+            "LoadBalancerPort": "80",
+            "InstanceProtocol": "HTTP"
+          },
+          {
+            "Protocol": "TCP",
+            "InstancePort": "443",
+            "LoadBalancerPort": "443",
+            "InstanceProtocol": "TCP"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "HTTP:5050/health",
+          "Timeout": "5",
+          "Interval": "30",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "LbSecurityGroup"
+          },
+          {
+            "Ref": "AdminSecurityGroup"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "PublicSubnet"
+          }
+        ]
+      },
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "DependsOn": "GatewayToInternet"
+    },
+    "SlaveRole": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Resource": [
+                    {
+                      "Ref": "AWS::StackId"
+                    },
+                    {
+                      "Fn::Join": [
+                        "",
+                        [
+                          {
+                            "Ref": "AWS::StackId"
+                          },
+                          "/*"
+                        ]
+                      ]
+                    }
+                  ],
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:*"
+                  ]
+                },
+                {
+                  "Resource": "*",
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateTags",
+                    "ec2:DescribeInstances",
+                    "ec2:CreateVolume",
+                    "ec2:DeleteVolume",
+                    "ec2:AttachVolume",
+                    "ec2:DetachVolume",
+                    "ec2:DescribeVolumes",
+                    "ec2:DescribeVolumeStatus",
+                    "ec2:DescribeVolumeAttribute",
+                    "ec2:CreateSnapshot",
+                    "ec2:CopySnapshot",
+                    "ec2:DeleteSnapshot",
+                    "ec2:DescribeSnapshots",
+                    "ec2:DescribeSnapshotAttribute"
+                  ]
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "Slaves"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Role"
+    },
+    "SlaveToPublicSlaveIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
         "FromPort": "0",
-        "GroupId": {
+        "SourceSecurityGroupId": {
           "Ref": "SlaveSecurityGroup"
         },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
+        "ToPort": "65535",
+        "GroupId": {
           "Ref": "PublicSlaveSecurityGroup"
-        },
-        "ToPort": "65535"
+        }
       },
       "Type": "AWS::EC2::SecurityGroupIngress"
     },
+    "MasterSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "Mesos Masters",
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "5050",
+            "SourceSecurityGroupId": {
+              "Ref": "LbSecurityGroup"
+            },
+            "ToPort": "5050"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "SourceSecurityGroupId": {
+              "Ref": "LbSecurityGroup"
+            },
+            "ToPort": "80"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "SourceSecurityGroupId": {
+              "Ref": "LbSecurityGroup"
+            },
+            "ToPort": "8080"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8181",
+            "SourceSecurityGroupId": {
+              "Ref": "LbSecurityGroup"
+            },
+            "ToPort": "8181"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "2181",
+            "SourceSecurityGroupId": {
+              "Ref": "LbSecurityGroup"
+            },
+            "ToPort": "2181"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "PublicSlaveToSlaveIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "SlaveSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "MasterToSlaveIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "MasterSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "SlaveSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "DHCPOptions": {
+      "Properties": {
+        "DomainName": {
+          "Fn::If": [
+            "RegionIsUsEast1",
+            "ec2.internal",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".compute.internal"
+                ]
+              ]
+            }
+          ]
+        },
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ]
+      },
+      "Type": "AWS::EC2::DHCPOptions"
+    },
     "MasterLaunchConfig": {
       "Properties": {
-        "AssociatePublicIpAddress": "true",
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
@@ -360,6 +321,30 @@
                 "#cloud-config\n",
                 "\"coreos\":\n",
                 "  \"units\":\n",
+                "  - \"command\": |-\n",
+                "      start\n",
+                "    \"content\": |\n",
+                "      [Unit]\n",
+                "      Description=AWS Setup: Formats the /var/lib ephemeral drive\n",
+                "      Before=var-lib.mount dbus.service\n",
+                "      [Service]\n",
+                "      Type=oneshot\n",
+                "      RemainAfterExit=yes\n",
+                "      ExecStart=/bin/bash -c \"(blkid -t TYPE=ext4 | grep xvdb) || (/usr/sbin/mkfs.ext4 -F /dev/xvdb)\"\n",
+                "    \"name\": |-\n",
+                "      format-var-lib-ephemeral.service\n",
+                "  - \"command\": |-\n",
+                "      start\n",
+                "    \"content\": |\n",
+                "      [Unit]\n",
+                "      Description=AWS Setup: Mount /var/lib\n",
+                "      Before=dbus.service\n",
+                "      [Mount]\n",
+                "      What=/dev/xvdb\n",
+                "      Where=/var/lib\n",
+                "      Type=ext4\n",
+                "    \"name\": |-\n",
+                "      var-lib.mount\n",
                 "  - \"command\": |-\n",
                 "      stop\n",
                 "    \"mask\": !!bool |-\n",
@@ -383,30 +368,6 @@
                 "    \"name\": |-\n",
                 "      systemd-resolved.service\n",
                 "  - \"command\": |-\n",
-                "      start\n",
-                "    \"content\": |\n",
-                "      [Unit]\n",
-                "      Description=Formats the /var/lib ephemeral drive\n",
-                "      Before=var-lib.mount dbus.service\n",
-                "      [Service]\n",
-                "      Type=oneshot\n",
-                "      RemainAfterExit=yes\n",
-                "      ExecStart=/bin/bash -c \"(blkid -t TYPE=ext4 | grep xvdb) || (/usr/sbin/mkfs.ext4 -F /dev/xvdb)\"\n",
-                "    \"name\": |-\n",
-                "      format-var-lib-ephemeral.service\n",
-                "  - \"command\": |-\n",
-                "      start\n",
-                "    \"content\": |\n",
-                "      [Unit]\n",
-                "      Description=Mount /var/lib\n",
-                "      Before=dbus.service\n",
-                "      [Mount]\n",
-                "      What=/dev/xvdb\n",
-                "      Where=/var/lib\n",
-                "      Type=ext4\n",
-                "    \"name\": |-\n",
-                "      var-lib.mount\n",
-                "  - \"command\": |-\n",
                 "      restart\n",
                 "    \"name\": |-\n",
                 "      systemd-journald.service\n",
@@ -429,7 +390,7 @@
                 "      dcos-link-env.service\n",
                 "  - \"content\": |\n",
                 "      [Unit]\n",
-                "      Description=Download the DCOS\n",
+                "      Description=Pkgpanda: Download the DCOS\n",
                 "      After=network-online.target\n",
                 "      Wants=network-online.target\n",
                 "      ConditionPathExists=!/opt/mesosphere/\n",
@@ -438,7 +399,7 @@
                 "      Type=oneshot\n",
                 "      StandardOutput=journal+console\n",
                 "      StandardError=journal+console\n",
-                "      ExecStartPre=/usr/bin/curl --fail --retry 20 --continue-at - --location --silent --show-error --verbose --output /tmp/bootstrap.tar.xz https://downloads.mesosphere.com/dcos/EarlyAccess/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\n",
+                "      ExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://downloads.mesosphere.com/dcos/EarlyAccess/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\n",
                 "      ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\n",
                 "      ExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\n",
                 "      ExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\n",
@@ -448,7 +409,7 @@
                 "      start\n",
                 "    \"content\": |\n",
                 "      [Unit]\n",
-                "      Description=Prep the Pkgpanda working directories for this host.\n",
+                "      Description=Pkgpanda: Specialize DCOS for this host.\n",
                 "      Requires=dcos-download.service\n",
                 "      After=dcos-download.service\n",
                 "      [Service]\n",
@@ -469,7 +430,7 @@
                 "      start\n",
                 "    \"content\": |-\n",
                 "      [Unit]\n",
-                "      Description=Signal CloudFormation Success\n",
+                "      Description=AWS Setup: Signal CloudFormation Success\n",
                 "      After=dcos.target\n",
                 "      Requires=dcos.target\n",
                 "      ConditionPathExists=!/var/lib/dcos-cfn-signal\n",
@@ -499,7 +460,7 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    BOOTSTRAP_ID=18d094b1648521b017622180e3a8e05788a81e80\n",
+                "    BOOTSTRAP_ID=a31ed4c418a9d0d55d5304171e1ac2fce4ddc797\n",
                 "  \"owner\": |-\n",
                 "    root\n",
                 "  \"path\": |-\n",
@@ -507,7 +468,7 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    [\"dcos-config--setup_63d4222216090c6d0f935d80dd068b63f3284a7c\", \"dcos-metadata--setup_63d4222216090c6d0f935d80dd068b63f3284a7c\"]\n",
+                "    [\"dcos-config--setup_ba37b469d77bdf76021c74cfd78c50dd8d091b90\", \"dcos-metadata--setup_ba37b469d77bdf76021c74cfd78c50dd8d091b90\"]\n",
                 "  \"owner\": |-\n",
                 "    root\n",
                 "  \"path\": |-\n",
@@ -535,39 +496,6 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    AWS_REGION=",
-                {
-                  "Ref": "AWS::Region"
-                },
-                "",
-                "\n",
-                "    AWS_STACK_ID=",
-                {
-                  "Ref": "AWS::StackId"
-                },
-                "",
-                "\n",
-                "    AWS_STACK_NAME=",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                "",
-                "\n",
-                "    AWS_IAM_MASTER_ROLE_NAME=",
-                {
-                  "Ref": "MasterRole"
-                },
-                "",
-                "\n",
-                "    AWS_IAM_SLAVE_ROLE_NAME=",
-                {
-                  "Ref": "SlaveRole"
-                },
-                "",
-                "\n",
-                "  \"path\": |-\n",
-                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
-                "- \"content\": |\n",
                 "    MESOS_CLUSTER=",
                 {
                   "Ref": "AWS::StackName"
@@ -576,6 +504,16 @@
                 "\n",
                 "  \"path\": |-\n",
                 "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/mesos-master-provider\n",
+                "- \"content\": |2\n",
+                "\n",
+                "    ADMINROUTER_ACTIVATE_AUTH_MODULE=",
+                {
+                  "Ref": "OAuthEnabled"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/adminrouter.env\n",
                 "- \"content\": |\n",
                 "    MASTER_SOURCE=exhibitor\n",
                 "    EXHIBITOR_ADDRESS=",
@@ -612,6 +550,55 @@
                 "\n",
                 "  \"path\": |-\n",
                 "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/exhibitor\n",
+                "- \"content\": |\n",
+                "    {\"uiConfiguration\":{\"plugins\":{\"banner\":{\"enabled\":false,\"backgroundColor\":\"#1E232F\",\"foregroundColor\":\"#FFFFFF\",\"headerTitle\":null,\"headerContent\":null,\"footerContent\":null,\"imagePath\":null,\"dismissible\":null},\"branding\":{\"enabled\":false},\"external-links\": {\"enabled\": false},\n",
+                "\n",
+                "    \"authentication\":{\"enabled\":false},\n",
+                "\n",
+                "    \"oauth\":{\"enabled\":",
+                {
+                  "Ref": "OAuthEnabled"
+                },
+                ",\"authHost\":\"https://dcos.auth0.com\"},",
+                "\n",
+                "\n",
+                "\n",
+                "    \"networking\":{\"enabled\":false},\"organization\":{\"enabled\":false},\"tracking\":{\"enabled\":true}}}}\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/ui-config.json\n",
+                "- \"content\": |\n",
+                "    AWS_REGION=",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_ID=",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_NAME=",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_MASTER_ROLE_NAME=",
+                {
+                  "Ref": "MasterRole"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_SLAVE_ROLE_NAME=",
+                {
+                  "Ref": "SlaveRole"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
                 "- \"content\": |-\n",
                 "    {}\n",
                 "  \"path\": |-\n",
@@ -632,14 +619,28 @@
         "IamInstanceProfile": {
           "Ref": "MasterInstanceProfile"
         },
+        "AssociatePublicIpAddress": "true",
+        "InstanceType": {
+          "Fn::FindInMap": [
+            "Parameters",
+            "MasterInstanceType",
+            "default"
+          ]
+        },
         "BlockDeviceMappings": [
           {
             "VirtualName": "ephemeral0",
             "DeviceName": "/dev/sdb"
           }
         ],
-        "KeyName": {
-          "Ref": "KeyName"
+        "ImageId": {
+          "Fn::FindInMap": [
+            "RegionToAmi",
+            {
+              "Ref": "AWS::Region"
+            },
+            "stable"
+          ]
         },
         "SecurityGroups": [
           {
@@ -649,114 +650,270 @@
             "Ref": "AdminSecurityGroup"
           }
         ],
-        "InstanceType": {
-          "Fn::FindInMap": [
-            "Parameters",
-            "MasterInstanceType",
-            "default"
-          ]
-        },
-        "ImageId": {
-          "Fn::FindInMap": [
-            "RegionToAmi",
-            {
-              "Ref": "AWS::Region"
-            },
-            "stable"
-          ]
+        "KeyName": {
+          "Ref": "KeyName"
         }
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration"
     },
-    "PrivateSubnetRouteTableAssociation": {
+    "PublicSlaveSecurityGroup": {
       "Properties": {
-        "RouteTableId": {
-          "Ref": "PrivateRouteTable"
-        },
-        "SubnetId": {
-          "Ref": "PrivateSubnet"
+        "GroupDescription": "Mesos Slaves Public",
+        "VpcId": {
+          "Ref": "Vpc"
         }
       },
-      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+      "Type": "AWS::EC2::SecurityGroup"
     },
-    "MasterInstanceProfile": {
-      "Properties": {
-        "Path": "/",
-        "Roles": [
-          {
-            "Ref": "MasterRole"
-          }
-        ]
-      },
-      "Type": "AWS::IAM::InstanceProfile"
-    },
-    "SlaveToPublicSlaveIngress": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "SlaveSecurityGroup"
-        },
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "LbSecurityGroup": {
+    "VPCDHCPOptionsAssociation": {
       "Properties": {
         "VpcId": {
           "Ref": "Vpc"
         },
-        "GroupDescription": "Mesos Master LB"
+        "DhcpOptionsId": {
+          "Ref": "DHCPOptions"
+        }
+      },
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation"
+    },
+    "AdminSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "Enable admin access to servers",
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": {
+              "Ref": "AdminLocation"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": {
+              "Ref": "AdminLocation"
+            }
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": {
+              "Ref": "AdminLocation"
+            }
+          }
+        ]
       },
       "Type": "AWS::EC2::SecurityGroup"
     },
-    "PublicSlaveIngressThree": {
+    "MasterServerGroup": {
       "Properties": {
-        "FromPort": "5052",
+        "LaunchConfigurationName": {
+          "Ref": "MasterLaunchConfig"
+        },
+        "AvailabilityZones": [
+          {
+            "Fn::GetAtt": [
+              "PublicSubnet",
+              "AvailabilityZone"
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "role",
+            "PropagateAtLaunch": "true",
+            "Value": "mesos-master"
+          }
+        ],
+        "DesiredCapacity": 3,
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "PublicSubnet"
+          }
+        ],
+        "MaxSize": 3,
+        "MinSize": 3,
+        "LoadBalancerNames": [
+          {
+            "Ref": "ElasticLoadBalancer"
+          },
+          {
+            "Ref": "InternalMasterLoadBalancer"
+          }
+        ]
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": 3,
+          "Timeout": {
+            "Fn::FindInMap": [
+              "Parameters",
+              "StackCreationTimeout",
+              "default"
+            ]
+          }
+        }
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "DependsOn": "GatewayToInternet"
+    },
+    "PublicSlaveIngressOne": {
+      "Properties": {
+        "IpProtocol": "tcp",
+        "FromPort": "0",
+        "ToPort": "21",
         "GroupId": {
           "Ref": "PublicSlaveSecurityGroup"
         },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "ToPort": "65535"
+        "CidrIp": "0.0.0.0/0"
       },
       "Type": "AWS::EC2::SecurityGroupIngress"
     },
-    "ElasticLoadBalancer": {
-      "DependsOn": "GatewayToInternet",
+    "PublicSlaveServerGroup": {
       "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "PublicSlaveLaunchConfig"
+        },
+        "AvailabilityZones": [
+          {
+            "Fn::GetAtt": [
+              "PublicSubnet",
+              "AvailabilityZone"
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "role",
+            "PropagateAtLaunch": "true",
+            "Value": "mesos-slave"
+          }
+        ],
+        "DesiredCapacity": {
+          "Ref": "PublicSlaveInstanceCount"
+        },
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "PublicSubnet"
+          }
+        ],
+        "MaxSize": {
+          "Ref": "PublicSlaveInstanceCount"
+        },
+        "MinSize": {
+          "Ref": "PublicSlaveInstanceCount"
+        },
+        "LoadBalancerNames": [
+          {
+            "Ref": "PublicSlaveLoadBalancer"
+          }
+        ]
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": {
+            "Ref": "PublicSlaveInstanceCount"
+          },
+          "Timeout": {
+            "Fn::FindInMap": [
+              "Parameters",
+              "StackCreationTimeout",
+              "default"
+            ]
+          }
+        }
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "DependsOn": "GatewayToInternet"
+    },
+    "InboundNetworkAclEntry": {
+      "Properties": {
+        "RuleNumber": "100",
+        "RuleAction": "allow",
+        "Protocol": "-1",
+        "Egress": "false",
+        "PortRange": {
+          "To": "65535",
+          "From": "0"
+        },
+        "NetworkAclId": {
+          "Ref": "PublicNetworkAcl"
+        },
+        "CidrBlock": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::NetworkAclEntry"
+    },
+    "InternalMasterLoadBalancer": {
+      "Properties": {
+        "Listeners": [
+          {
+            "Protocol": "HTTP",
+            "InstancePort": "5050",
+            "LoadBalancerPort": "5050",
+            "InstanceProtocol": "HTTP"
+          },
+          {
+            "Protocol": "TCP",
+            "InstancePort": "2181",
+            "LoadBalancerPort": "2181",
+            "InstanceProtocol": "TCP"
+          },
+          {
+            "Protocol": "HTTP",
+            "InstancePort": "8181",
+            "LoadBalancerPort": "8181",
+            "InstanceProtocol": "HTTP"
+          },
+          {
+            "Protocol": "HTTP",
+            "InstancePort": "80",
+            "LoadBalancerPort": "80",
+            "InstanceProtocol": "HTTP"
+          },
+          {
+            "Protocol": "TCP",
+            "InstancePort": "443",
+            "LoadBalancerPort": "443",
+            "InstanceProtocol": "TCP"
+          },
+          {
+            "Protocol": "HTTP",
+            "InstancePort": "8080",
+            "LoadBalancerPort": "8080",
+            "InstanceProtocol": "HTTP"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "HTTP:5050/health",
+          "Timeout": "5",
+          "Interval": "30",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2"
+        },
         "SecurityGroups": [
           {
             "Ref": "LbSecurityGroup"
           },
           {
             "Ref": "AdminSecurityGroup"
-          }
-        ],
-        "HealthCheck": {
-          "Timeout": "5",
-          "HealthyThreshold": "2",
-          "Target": "HTTP:5050/health",
-          "Interval": "30",
-          "UnhealthyThreshold": "2"
-        },
-        "Listeners": [
-          {
-            "Protocol": "HTTP",
-            "LoadBalancerPort": "80",
-            "InstanceProtocol": "HTTP",
-            "InstancePort": "80"
           },
           {
-            "Protocol": "TCP",
-            "LoadBalancerPort": "443",
-            "InstanceProtocol": "TCP",
-            "InstancePort": "443"
+            "Ref": "SlaveSecurityGroup"
+          },
+          {
+            "Ref": "PublicSlaveSecurityGroup"
+          },
+          {
+            "Ref": "MasterSecurityGroup"
           }
         ],
+        "Scheme": "internal",
         "Subnets": [
           {
             "Ref": "PublicSubnet"
@@ -765,29 +922,205 @@
       },
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer"
     },
+    "LbSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "Mesos Master LB",
+        "VpcId": {
+          "Ref": "Vpc"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroup"
+    },
+    "PrivateSubnetRouteTableAssociation": {
+      "Properties": {
+        "SubnetId": {
+          "Ref": "PrivateSubnet"
+        },
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "SlaveServerGroup": {
+      "Properties": {
+        "LaunchConfigurationName": {
+          "Ref": "SlaveLaunchConfig"
+        },
+        "AvailabilityZones": [
+          {
+            "Fn::GetAtt": [
+              "PrivateSubnet",
+              "AvailabilityZone"
+            ]
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "role",
+            "PropagateAtLaunch": "true",
+            "Value": "mesos-slave"
+          }
+        ],
+        "DesiredCapacity": {
+          "Ref": "SlaveInstanceCount"
+        },
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "PrivateSubnet"
+          }
+        ],
+        "MaxSize": {
+          "Ref": "SlaveInstanceCount"
+        },
+        "MinSize": {
+          "Ref": "SlaveInstanceCount"
+        }
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Count": {
+            "Ref": "SlaveInstanceCount"
+          },
+          "Timeout": {
+            "Fn::FindInMap": [
+              "Parameters",
+              "StackCreationTimeout",
+              "default"
+            ]
+          }
+        }
+      },
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "DependsOn": "GatewayToInternet"
+    },
+    "PrivateRoute": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "InstanceId": {
+          "Ref": "NATInstance"
+        },
+        "RouteTableId": {
+          "Ref": "PrivateRouteTable"
+        }
+      },
+      "Type": "AWS::EC2::Route"
+    },
+    "PublicNetworkAcl": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Public"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::NetworkAcl"
+    },
+    "SlaveToMasterLBIngress": {
+      "Properties": {
+        "IpProtocol": "tcp",
+        "FromPort": "2181",
+        "SourceSecurityGroupId": {
+          "Ref": "SlaveSecurityGroup"
+        },
+        "ToPort": "2181",
+        "GroupId": {
+          "Ref": "LbSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "PublicSlaveLoadBalancer": {
+      "Properties": {
+        "Listeners": [
+          {
+            "Protocol": "HTTP",
+            "InstancePort": "80",
+            "LoadBalancerPort": "80",
+            "InstanceProtocol": "HTTP"
+          },
+          {
+            "Protocol": "TCP",
+            "InstancePort": "443",
+            "LoadBalancerPort": "443",
+            "InstanceProtocol": "TCP"
+          }
+        ],
+        "HealthCheck": {
+          "Target": "HTTP:9090/_haproxy_health_check",
+          "Timeout": "2",
+          "Interval": "5",
+          "HealthyThreshold": "2",
+          "UnhealthyThreshold": "2"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "PublicSlaveSecurityGroup"
+          }
+        ],
+        "Subnets": [
+          {
+            "Ref": "PublicSubnet"
+          }
+        ]
+      },
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "DependsOn": "GatewayToInternet"
+    },
+    "PrivateRouteTable": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Public"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::RouteTable"
+    },
     "MasterRole": {
       "Properties": {
+        "Path": "/",
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
         "Policies": [
           {
-            "PolicyName": "root",
             "PolicyDocument": {
-              "Version": "2012-10-17",
               "Statement": [
                 {
-                  "Effect": "Allow",
-                  "Action": [
-                    "s3:AbortMultipartUpload",
-                    "s3:DeleteObject",
-                    "s3:GetBucketAcl",
-                    "s3:GetBucketPolicy",
-                    "s3:GetObject",
-                    "s3:GetObjectAcl",
-                    "s3:ListBucket",
-                    "s3:ListBucketMultipartUploads",
-                    "s3:ListMultipartUploadParts",
-                    "s3:PutObject",
-                    "s3:PutObjectAcl"
-                  ],
                   "Resource": [
                     {
                       "Fn::Join": [
@@ -812,13 +1145,23 @@
                         ]
                       ]
                     }
+                  ],
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:AbortMultipartUpload",
+                    "s3:DeleteObject",
+                    "s3:GetBucketAcl",
+                    "s3:GetBucketPolicy",
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:ListBucket",
+                    "s3:ListBucketMultipartUploads",
+                    "s3:ListMultipartUploadParts",
+                    "s3:PutObject",
+                    "s3:PutObjectAcl"
                   ]
                 },
                 {
-                  "Effect": "Allow",
-                  "Action": [
-                    "cloudformation:*"
-                  ],
                   "Resource": [
                     {
                       "Ref": "AWS::StackId"
@@ -834,9 +1177,14 @@
                         ]
                       ]
                     }
+                  ],
+                  "Effect": "Allow",
+                  "Action": [
+                    "cloudformation:*"
                   ]
                 },
                 {
+                  "Resource": "*",
                   "Effect": "Allow",
                   "Action": [
                     "ec2:DescribeKeyPairs",
@@ -846,401 +1194,40 @@
                     "autoscaling:DescribeAutoScalingGroups",
                     "autoscaling:DescribeScalingActivities",
                     "elasticloadbalancing:DescribeLoadBalancers"
-                  ],
-                  "Resource": "*"
+                  ]
                 }
-              ]
-            }
-          }
-        ],
-        "Path": "/",
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "sts:AssumeRole"
               ],
-              "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
-              }
-            }
-          ]
-        }
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "root"
+          }
+        ]
       },
       "Type": "AWS::IAM::Role"
     },
-    "MasterToPublicSlaveIngress": {
+    "PublicSlaveIngressFour": {
       "Properties": {
+        "IpProtocol": "udp",
         "FromPort": "0",
+        "ToPort": "21",
         "GroupId": {
           "Ref": "PublicSlaveSecurityGroup"
         },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "MasterSecurityGroup"
-        },
-        "ToPort": "65535"
+        "CidrIp": "0.0.0.0/0"
       },
       "Type": "AWS::EC2::SecurityGroupIngress"
     },
-    "SlaveRole": {
+    "SlaveToMasterIngress": {
       "Properties": {
-        "Policies": [
-          {
-            "PolicyName": "Slaves",
-            "PolicyDocument": {
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "cloudformation:*"
-                  ],
-                  "Resource": [
-                    {
-                      "Ref": "AWS::StackId"
-                    },
-                    {
-                      "Fn::Join": [
-                        "",
-                        [
-                          {
-                            "Ref": "AWS::StackId"
-                          },
-                          "/*"
-                        ]
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        ],
-        "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Action": [
-                "sts:AssumeRole"
-              ],
-              "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "Type": "AWS::IAM::Role"
-    },
-    "NATInstance": {
-      "DependsOn": "GatewayToInternet",
-      "Properties": {
-        "KeyName": {
-          "Ref": "KeyName"
-        },
-        "NetworkInterfaces": [
-          {
-            "AssociatePublicIpAddress": "true",
-            "GroupSet": [
-              {
-                "Ref": "SlaveSecurityGroup"
-              },
-              {
-                "Ref": "MasterSecurityGroup"
-              },
-              {
-                "Ref": "AdminSecurityGroup"
-              }
-            ],
-            "DeleteOnTermination": "true",
-            "DeviceIndex": "0",
-            "SubnetId": {
-              "Ref": "PublicSubnet"
-            }
-          }
-        ],
-        "InstanceType": "m3.medium",
-        "ImageId": {
-          "Fn::FindInMap": [
-            "NATAmi",
-            {
-              "Ref": "AWS::Region"
-            },
-            "default"
-          ]
-        },
-        "SourceDestCheck": "false"
-      },
-      "Type": "AWS::EC2::Instance"
-    },
-    "PrivateNetworkAcl": {
-      "Properties": {
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Public"
-          }
-        ]
-      },
-      "Type": "AWS::EC2::NetworkAcl"
-    },
-    "MasterToMasterIngress": {
-      "Properties": {
+        "IpProtocol": "-1",
         "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "SlaveSecurityGroup"
+        },
+        "ToPort": "65535",
         "GroupId": {
           "Ref": "MasterSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "MasterSecurityGroup"
-        },
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "MasterToSlaveIngress": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "SlaveSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "MasterSecurityGroup"
-        },
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "SlaveInstanceProfile": {
-      "Properties": {
-        "Path": "/",
-        "Roles": [
-          {
-            "Ref": "SlaveRole"
-          }
-        ]
-      },
-      "Type": "AWS::IAM::InstanceProfile"
-    },
-    "PublicSubnetRouteTableAssociation": {
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PublicRouteTable"
-        },
-        "SubnetId": {
-          "Ref": "PublicSubnet"
         }
-      },
-      "Type": "AWS::EC2::SubnetRouteTableAssociation"
-    },
-    "PublicSlaveLoadBalancer": {
-      "DependsOn": "GatewayToInternet",
-      "Properties": {
-        "SecurityGroups": [
-          {
-            "Ref": "PublicSlaveSecurityGroup"
-          }
-        ],
-        "HealthCheck": {
-          "Timeout": "5",
-          "HealthyThreshold": "2",
-          "Target": "HTTP:80/",
-          "Interval": "30",
-          "UnhealthyThreshold": "2"
-        },
-        "Listeners": [
-          {
-            "Protocol": "HTTP",
-            "LoadBalancerPort": "80",
-            "InstanceProtocol": "HTTP",
-            "InstancePort": "80"
-          },
-          {
-            "Protocol": "TCP",
-            "LoadBalancerPort": "443",
-            "InstanceProtocol": "TCP",
-            "InstancePort": "443"
-          }
-        ],
-        "Subnets": [
-          {
-            "Ref": "PublicSubnet"
-          }
-        ]
-      },
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer"
-    },
-    "SlaveServerGroup": {
-      "DependsOn": "GatewayToInternet",
-      "Properties": {
-        "MinSize": {
-          "Ref": "SlaveInstanceCount"
-        },
-        "DesiredCapacity": {
-          "Ref": "SlaveInstanceCount"
-        },
-        "MaxSize": {
-          "Ref": "SlaveInstanceCount"
-        },
-        "AvailabilityZones": [
-          {
-            "Fn::GetAtt": [
-              "PrivateSubnet",
-              "AvailabilityZone"
-            ]
-          }
-        ],
-        "LaunchConfigurationName": {
-          "Ref": "SlaveLaunchConfig"
-        },
-        "VPCZoneIdentifier": [
-          {
-            "Ref": "PrivateSubnet"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "role",
-            "Value": "mesos-slave",
-            "PropagateAtLaunch": "true"
-          }
-        ]
-      },
-      "CreationPolicy": {
-        "ResourceSignal": {
-          "Count": {
-            "Ref": "SlaveInstanceCount"
-          },
-          "Timeout": {
-            "Fn::FindInMap": [
-              "Parameters",
-              "StackCreationTimeout",
-              "default"
-            ]
-          }
-        }
-      },
-      "Type": "AWS::AutoScaling::AutoScalingGroup"
-    },
-    "SlaveToMasterLBIngress": {
-      "Properties": {
-        "FromPort": "2181",
-        "GroupId": {
-          "Ref": "LbSecurityGroup"
-        },
-        "IpProtocol": "tcp",
-        "SourceSecurityGroupId": {
-          "Ref": "SlaveSecurityGroup"
-        },
-        "ToPort": "2181"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "PublicRoute": {
-      "DependsOn": "GatewayToInternet",
-      "Properties": {
-        "RouteTableId": {
-          "Ref": "PublicRouteTable"
-        },
-        "DestinationCidrBlock": "0.0.0.0/0",
-        "GatewayId": {
-          "Ref": "InternetGateway"
-        }
-      },
-      "Type": "AWS::EC2::Route"
-    },
-    "PublicSubnetNetworkAclAssociation": {
-      "Properties": {
-        "NetworkAclId": {
-          "Ref": "PublicNetworkAcl"
-        },
-        "SubnetId": {
-          "Ref": "PublicSubnet"
-        }
-      },
-      "Type": "AWS::EC2::SubnetNetworkAclAssociation"
-    },
-    "PrivateSubnet": {
-      "Properties": {
-        "CidrBlock": {
-          "Fn::FindInMap": [
-            "Parameters",
-            "PrivateSubnetRange",
-            "default"
-          ]
-        },
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Private"
-          }
-        ]
-      },
-      "Type": "AWS::EC2::Subnet"
-    },
-    "DHCPOptions": {
-      "Properties": {
-        "DomainNameServers": [
-          "AmazonProvidedDNS"
-        ],
-        "DomainName": {
-          "Fn::If": [
-            "RegionIsUsEast1",
-            "ec2.internal",
-            {
-              "Fn::Join": [
-                "",
-                [
-                  {
-                    "Ref": "AWS::Region"
-                  },
-                  ".compute.internal"
-                ]
-              ]
-            }
-          ]
-        }
-      },
-      "Type": "AWS::EC2::DHCPOptions"
-    },
-    "SlaveToSlaveIngress": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "SlaveSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "SlaveSecurityGroup"
-        },
-        "ToPort": "65535"
       },
       "Type": "AWS::EC2::SecurityGroupIngress"
     },
@@ -1264,378 +1251,8 @@
       },
       "Type": "AWS::EC2::RouteTable"
     },
-    "Vpc": {
-      "Properties": {
-        "EnableDnsHostnames": "true",
-        "CidrBlock": {
-          "Fn::FindInMap": [
-            "Parameters",
-            "VPCSubnetRange",
-            "default"
-          ]
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Public"
-          }
-        ],
-        "EnableDnsSupport": "true"
-      },
-      "Type": "AWS::EC2::VPC"
-    },
-    "PublicSubnet": {
-      "Properties": {
-        "CidrBlock": {
-          "Fn::FindInMap": [
-            "Parameters",
-            "PublicSubnetRange",
-            "default"
-          ]
-        },
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Public"
-          }
-        ]
-      },
-      "Type": "AWS::EC2::Subnet"
-    },
-    "PrivateRouteTable": {
-      "Properties": {
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "Tags": [
-          {
-            "Key": "Application",
-            "Value": {
-              "Ref": "AWS::StackName"
-            }
-          },
-          {
-            "Key": "Network",
-            "Value": "Public"
-          }
-        ]
-      },
-      "Type": "AWS::EC2::RouteTable"
-    },
-    "PublicSlaveSecurityGroup": {
-      "Properties": {
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "GroupDescription": "Mesos Slaves Public"
-      },
-      "Type": "AWS::EC2::SecurityGroup"
-    },
-    "PublicSlaveToMasterIngress": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "MasterSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "PublicSlaveServerGroup": {
-      "DependsOn": "GatewayToInternet",
-      "Properties": {
-        "MinSize": {
-          "Ref": "PublicSlaveInstanceCount"
-        },
-        "DesiredCapacity": {
-          "Ref": "PublicSlaveInstanceCount"
-        },
-        "LoadBalancerNames": [
-          {
-            "Ref": "PublicSlaveLoadBalancer"
-          }
-        ],
-        "MaxSize": {
-          "Ref": "PublicSlaveInstanceCount"
-        },
-        "AvailabilityZones": [
-          {
-            "Fn::GetAtt": [
-              "PublicSubnet",
-              "AvailabilityZone"
-            ]
-          }
-        ],
-        "LaunchConfigurationName": {
-          "Ref": "PublicSlaveLaunchConfig"
-        },
-        "VPCZoneIdentifier": [
-          {
-            "Ref": "PublicSubnet"
-          }
-        ],
-        "Tags": [
-          {
-            "Key": "role",
-            "Value": "mesos-slave",
-            "PropagateAtLaunch": "true"
-          }
-        ]
-      },
-      "CreationPolicy": {
-        "ResourceSignal": {
-          "Count": {
-            "Ref": "PublicSlaveInstanceCount"
-          },
-          "Timeout": {
-            "Fn::FindInMap": [
-              "Parameters",
-              "StackCreationTimeout",
-              "default"
-            ]
-          }
-        }
-      },
-      "Type": "AWS::AutoScaling::AutoScalingGroup"
-    },
-    "PublicSlaveIngressFour": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "udp",
-        "ToPort": "21"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "AdminSecurityGroup": {
-      "Properties": {
-        "SecurityGroupIngress": [
-          {
-            "FromPort": "22",
-            "CidrIp": {
-              "Ref": "AdminLocation"
-            },
-            "IpProtocol": "tcp",
-            "ToPort": "22"
-          },
-          {
-            "FromPort": "80",
-            "CidrIp": {
-              "Ref": "AdminLocation"
-            },
-            "IpProtocol": "tcp",
-            "ToPort": "80"
-          },
-          {
-            "FromPort": "443",
-            "CidrIp": {
-              "Ref": "AdminLocation"
-            },
-            "IpProtocol": "tcp",
-            "ToPort": "443"
-          }
-        ],
-        "VpcId": {
-          "Ref": "Vpc"
-        },
-        "GroupDescription": "Enable admin access to servers"
-      },
-      "Type": "AWS::EC2::SecurityGroup"
-    },
-    "VPCDHCPOptionsAssociation": {
-      "Properties": {
-        "DhcpOptionsId": {
-          "Ref": "DHCPOptions"
-        },
-        "VpcId": {
-          "Ref": "Vpc"
-        }
-      },
-      "Type": "AWS::EC2::VPCDHCPOptionsAssociation"
-    },
-    "InternalMasterLoadBalancer": {
-      "Properties": {
-        "SecurityGroups": [
-          {
-            "Ref": "LbSecurityGroup"
-          },
-          {
-            "Ref": "AdminSecurityGroup"
-          },
-          {
-            "Ref": "SlaveSecurityGroup"
-          },
-          {
-            "Ref": "PublicSlaveSecurityGroup"
-          },
-          {
-            "Ref": "MasterSecurityGroup"
-          }
-        ],
-        "HealthCheck": {
-          "Timeout": "5",
-          "HealthyThreshold": "2",
-          "Target": "HTTP:5050/health",
-          "Interval": "30",
-          "UnhealthyThreshold": "2"
-        },
-        "Scheme": "internal",
-        "Listeners": [
-          {
-            "Protocol": "HTTP",
-            "LoadBalancerPort": "5050",
-            "InstanceProtocol": "HTTP",
-            "InstancePort": "5050"
-          },
-          {
-            "Protocol": "TCP",
-            "LoadBalancerPort": "2181",
-            "InstanceProtocol": "TCP",
-            "InstancePort": "2181"
-          },
-          {
-            "Protocol": "HTTP",
-            "LoadBalancerPort": "8181",
-            "InstanceProtocol": "HTTP",
-            "InstancePort": "8181"
-          },
-          {
-            "Protocol": "HTTP",
-            "LoadBalancerPort": "80",
-            "InstanceProtocol": "HTTP",
-            "InstancePort": "80"
-          },
-          {
-            "Protocol": "TCP",
-            "LoadBalancerPort": "443",
-            "InstanceProtocol": "TCP",
-            "InstancePort": "443"
-          },
-          {
-            "Protocol": "HTTP",
-            "LoadBalancerPort": "8080",
-            "InstanceProtocol": "HTTP",
-            "InstancePort": "8080"
-          }
-        ],
-        "Subnets": [
-          {
-            "Ref": "PublicSubnet"
-          }
-        ]
-      },
-      "Type": "AWS::ElasticLoadBalancing::LoadBalancer"
-    },
-    "PrivateSubnetNetworkAclAssociation": {
-      "Properties": {
-        "NetworkAclId": {
-          "Ref": "PrivateNetworkAcl"
-        },
-        "SubnetId": {
-          "Ref": "PrivateSubnet"
-        }
-      },
-      "Type": "AWS::EC2::SubnetNetworkAclAssociation"
-    },
-    "SlaveToMasterIngress": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "MasterSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "SlaveSecurityGroup"
-        },
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "PrivateInboundNetworkAclEntry": {
-      "Properties": {
-        "RuleNumber": "100",
-        "Egress": "false",
-        "PortRange": {
-          "From": "0",
-          "To": "65535"
-        },
-        "NetworkAclId": {
-          "Ref": "PrivateNetworkAcl"
-        },
-        "Protocol": "-1",
-        "RuleAction": "allow",
-        "CidrBlock": "0.0.0.0/0"
-      },
-      "Type": "AWS::EC2::NetworkAclEntry"
-    },
-    "PublicSlaveToPublicSlaveIngress": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "IpProtocol": "-1",
-        "SourceSecurityGroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "ToPort": "65535"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "InboundNetworkAclEntry": {
-      "Properties": {
-        "RuleNumber": "100",
-        "Egress": "false",
-        "PortRange": {
-          "From": "0",
-          "To": "65535"
-        },
-        "NetworkAclId": {
-          "Ref": "PublicNetworkAcl"
-        },
-        "Protocol": "-1",
-        "RuleAction": "allow",
-        "CidrBlock": "0.0.0.0/0"
-      },
-      "Type": "AWS::EC2::NetworkAclEntry"
-    },
-    "PublicSlaveIngressOne": {
-      "Properties": {
-        "FromPort": "0",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "tcp",
-        "ToPort": "21"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
     "PublicSlaveLaunchConfig": {
       "Properties": {
-        "AssociatePublicIpAddress": "true",
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
@@ -1644,6 +1261,30 @@
                 "#cloud-config\n",
                 "\"coreos\":\n",
                 "  \"units\":\n",
+                "  - \"command\": |-\n",
+                "      start\n",
+                "    \"content\": |\n",
+                "      [Unit]\n",
+                "      Description=AWS Setup: Formats the /var/lib ephemeral drive\n",
+                "      Before=var-lib.mount dbus.service\n",
+                "      [Service]\n",
+                "      Type=oneshot\n",
+                "      RemainAfterExit=yes\n",
+                "      ExecStart=/bin/bash -c \"(blkid -t TYPE=ext4 | grep xvdb) || (/usr/sbin/mkfs.ext4 -F /dev/xvdb)\"\n",
+                "    \"name\": |-\n",
+                "      format-var-lib-ephemeral.service\n",
+                "  - \"command\": |-\n",
+                "      start\n",
+                "    \"content\": |\n",
+                "      [Unit]\n",
+                "      Description=AWS Setup: Mount /var/lib\n",
+                "      Before=dbus.service\n",
+                "      [Mount]\n",
+                "      What=/dev/xvdb\n",
+                "      Where=/var/lib\n",
+                "      Type=ext4\n",
+                "    \"name\": |-\n",
+                "      var-lib.mount\n",
                 "  - \"command\": |-\n",
                 "      stop\n",
                 "    \"mask\": !!bool |-\n",
@@ -1667,30 +1308,6 @@
                 "    \"name\": |-\n",
                 "      systemd-resolved.service\n",
                 "  - \"command\": |-\n",
-                "      start\n",
-                "    \"content\": |\n",
-                "      [Unit]\n",
-                "      Description=Formats the /var/lib ephemeral drive\n",
-                "      Before=var-lib.mount dbus.service\n",
-                "      [Service]\n",
-                "      Type=oneshot\n",
-                "      RemainAfterExit=yes\n",
-                "      ExecStart=/bin/bash -c \"(blkid -t TYPE=ext4 | grep xvdb) || (/usr/sbin/mkfs.ext4 -F /dev/xvdb)\"\n",
-                "    \"name\": |-\n",
-                "      format-var-lib-ephemeral.service\n",
-                "  - \"command\": |-\n",
-                "      start\n",
-                "    \"content\": |\n",
-                "      [Unit]\n",
-                "      Description=Mount /var/lib\n",
-                "      Before=dbus.service\n",
-                "      [Mount]\n",
-                "      What=/dev/xvdb\n",
-                "      Where=/var/lib\n",
-                "      Type=ext4\n",
-                "    \"name\": |-\n",
-                "      var-lib.mount\n",
-                "  - \"command\": |-\n",
                 "      restart\n",
                 "    \"name\": |-\n",
                 "      systemd-journald.service\n",
@@ -1713,7 +1330,7 @@
                 "      dcos-link-env.service\n",
                 "  - \"content\": |\n",
                 "      [Unit]\n",
-                "      Description=Download the DCOS\n",
+                "      Description=Pkgpanda: Download the DCOS\n",
                 "      After=network-online.target\n",
                 "      Wants=network-online.target\n",
                 "      ConditionPathExists=!/opt/mesosphere/\n",
@@ -1722,7 +1339,7 @@
                 "      Type=oneshot\n",
                 "      StandardOutput=journal+console\n",
                 "      StandardError=journal+console\n",
-                "      ExecStartPre=/usr/bin/curl --fail --retry 20 --continue-at - --location --silent --show-error --verbose --output /tmp/bootstrap.tar.xz https://downloads.mesosphere.com/dcos/EarlyAccess/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\n",
+                "      ExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://downloads.mesosphere.com/dcos/EarlyAccess/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\n",
                 "      ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\n",
                 "      ExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\n",
                 "      ExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\n",
@@ -1732,7 +1349,7 @@
                 "      start\n",
                 "    \"content\": |\n",
                 "      [Unit]\n",
-                "      Description=Prep the Pkgpanda working directories for this host.\n",
+                "      Description=Pkgpanda: Specialize DCOS for this host.\n",
                 "      Requires=dcos-download.service\n",
                 "      After=dcos-download.service\n",
                 "      [Service]\n",
@@ -1753,7 +1370,7 @@
                 "      start\n",
                 "    \"content\": |-\n",
                 "      [Unit]\n",
-                "      Description=Signal CloudFormation Success\n",
+                "      Description=AWS Setup: Signal CloudFormation Success\n",
                 "      After=dcos.target\n",
                 "      Requires=dcos.target\n",
                 "      ConditionPathExists=!/var/lib/dcos-cfn-signal\n",
@@ -1783,7 +1400,7 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    BOOTSTRAP_ID=18d094b1648521b017622180e3a8e05788a81e80\n",
+                "    BOOTSTRAP_ID=a31ed4c418a9d0d55d5304171e1ac2fce4ddc797\n",
                 "  \"owner\": |-\n",
                 "    root\n",
                 "  \"path\": |-\n",
@@ -1791,7 +1408,7 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    [\"dcos-config--setup_63d4222216090c6d0f935d80dd068b63f3284a7c\", \"dcos-metadata--setup_63d4222216090c6d0f935d80dd068b63f3284a7c\"]\n",
+                "    [\"dcos-config--setup_ba37b469d77bdf76021c74cfd78c50dd8d091b90\", \"dcos-metadata--setup_ba37b469d77bdf76021c74cfd78c50dd8d091b90\"]\n",
                 "  \"owner\": |-\n",
                 "    root\n",
                 "  \"path\": |-\n",
@@ -1819,39 +1436,6 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    AWS_REGION=",
-                {
-                  "Ref": "AWS::Region"
-                },
-                "",
-                "\n",
-                "    AWS_STACK_ID=",
-                {
-                  "Ref": "AWS::StackId"
-                },
-                "",
-                "\n",
-                "    AWS_STACK_NAME=",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                "",
-                "\n",
-                "    AWS_IAM_MASTER_ROLE_NAME=",
-                {
-                  "Ref": "MasterRole"
-                },
-                "",
-                "\n",
-                "    AWS_IAM_SLAVE_ROLE_NAME=",
-                {
-                  "Ref": "SlaveRole"
-                },
-                "",
-                "\n",
-                "  \"path\": |-\n",
-                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
-                "- \"content\": |\n",
                 "    MESOS_CLUSTER=",
                 {
                   "Ref": "AWS::StackName"
@@ -1860,6 +1444,16 @@
                 "\n",
                 "  \"path\": |-\n",
                 "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/mesos-master-provider\n",
+                "- \"content\": |2\n",
+                "\n",
+                "    ADMINROUTER_ACTIVATE_AUTH_MODULE=",
+                {
+                  "Ref": "OAuthEnabled"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/adminrouter.env\n",
                 "- \"content\": |\n",
                 "    MASTER_SOURCE=exhibitor\n",
                 "    EXHIBITOR_ADDRESS=",
@@ -1896,6 +1490,55 @@
                 "\n",
                 "  \"path\": |-\n",
                 "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/exhibitor\n",
+                "- \"content\": |\n",
+                "    {\"uiConfiguration\":{\"plugins\":{\"banner\":{\"enabled\":false,\"backgroundColor\":\"#1E232F\",\"foregroundColor\":\"#FFFFFF\",\"headerTitle\":null,\"headerContent\":null,\"footerContent\":null,\"imagePath\":null,\"dismissible\":null},\"branding\":{\"enabled\":false},\"external-links\": {\"enabled\": false},\n",
+                "\n",
+                "    \"authentication\":{\"enabled\":false},\n",
+                "\n",
+                "    \"oauth\":{\"enabled\":",
+                {
+                  "Ref": "OAuthEnabled"
+                },
+                ",\"authHost\":\"https://dcos.auth0.com\"},",
+                "\n",
+                "\n",
+                "\n",
+                "    \"networking\":{\"enabled\":false},\"organization\":{\"enabled\":false},\"tracking\":{\"enabled\":true}}}}\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/ui-config.json\n",
+                "- \"content\": |\n",
+                "    AWS_REGION=",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_ID=",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_NAME=",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_MASTER_ROLE_NAME=",
+                {
+                  "Ref": "MasterRole"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_SLAVE_ROLE_NAME=",
+                {
+                  "Ref": "SlaveRole"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
                 "- \"content\": |-\n",
                 "    {}\n",
                 "  \"path\": |-\n",
@@ -1913,20 +1556,7 @@
         "IamInstanceProfile": {
           "Ref": "SlaveInstanceProfile"
         },
-        "BlockDeviceMappings": [
-          {
-            "VirtualName": "ephemeral0",
-            "DeviceName": "/dev/sdb"
-          }
-        ],
-        "KeyName": {
-          "Ref": "KeyName"
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "PublicSlaveSecurityGroup"
-          }
-        ],
+        "AssociatePublicIpAddress": "true",
         "InstanceType": {
           "Fn::FindInMap": [
             "Parameters",
@@ -1934,6 +1564,12 @@
             "default"
           ]
         },
+        "BlockDeviceMappings": [
+          {
+            "VirtualName": "ephemeral0",
+            "DeviceName": "/dev/sdb"
+          }
+        ],
         "ImageId": {
           "Fn::FindInMap": [
             "RegionToAmi",
@@ -1942,76 +1578,336 @@
             },
             "stable"
           ]
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "PublicSlaveSecurityGroup"
+          }
+        ],
+        "KeyName": {
+          "Ref": "KeyName"
         }
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration"
     },
-    "PublicSlaveIngressFive": {
+    "PublicSubnet": {
       "Properties": {
-        "FromPort": "23",
-        "GroupId": {
-          "Ref": "PublicSlaveSecurityGroup"
-        },
-        "CidrIp": "0.0.0.0/0",
-        "IpProtocol": "udp",
-        "ToPort": "5050"
-      },
-      "Type": "AWS::EC2::SecurityGroupIngress"
-    },
-    "MasterSecurityGroup": {
-      "Properties": {
-        "SecurityGroupIngress": [
-          {
-            "FromPort": "5050",
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LbSecurityGroup"
-            },
-            "ToPort": "5050"
-          },
-          {
-            "FromPort": "80",
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LbSecurityGroup"
-            },
-            "ToPort": "80"
-          },
-          {
-            "FromPort": "8080",
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LbSecurityGroup"
-            },
-            "ToPort": "8080"
-          },
-          {
-            "FromPort": "8181",
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LbSecurityGroup"
-            },
-            "ToPort": "8181"
-          },
-          {
-            "FromPort": "2181",
-            "IpProtocol": "tcp",
-            "SourceSecurityGroupId": {
-              "Ref": "LbSecurityGroup"
-            },
-            "ToPort": "2181"
-          }
-        ],
         "VpcId": {
           "Ref": "Vpc"
         },
-        "GroupDescription": "Mesos Masters"
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "Parameters",
+            "PublicSubnetRange",
+            "default"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Public"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PublicSlaveIngressTwo": {
+      "Properties": {
+        "IpProtocol": "tcp",
+        "FromPort": "23",
+        "ToPort": "5050",
+        "GroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "CidrIp": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "PublicSubnetNetworkAclAssociation": {
+      "Properties": {
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        },
+        "NetworkAclId": {
+          "Ref": "PublicNetworkAcl"
+        }
+      },
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation"
+    },
+    "PublicSlaveIngressThree": {
+      "Properties": {
+        "IpProtocol": "tcp",
+        "FromPort": "5052",
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "CidrIp": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "SlaveToSlaveIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "SlaveSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "SlaveSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "SlaveSecurityGroup": {
+      "Properties": {
+        "GroupDescription": "Mesos Slaves",
+        "VpcId": {
+          "Ref": "Vpc"
+        }
       },
       "Type": "AWS::EC2::SecurityGroup"
     },
+    "PrivateNetworkAcl": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Public"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::NetworkAcl"
+    },
+    "Vpc": {
+      "Properties": {
+        "EnableDnsHostnames": "true",
+        "EnableDnsSupport": "true",
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "Parameters",
+            "VPCSubnetRange",
+            "default"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Public"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::VPC"
+    },
+    "PublicSlaveToMasterIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "MasterSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "InternetGateway": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Public"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::InternetGateway",
+      "DependsOn": "Vpc"
+    },
+    "PrivateSubnetNetworkAclAssociation": {
+      "Properties": {
+        "SubnetId": {
+          "Ref": "PrivateSubnet"
+        },
+        "NetworkAclId": {
+          "Ref": "PrivateNetworkAcl"
+        }
+      },
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation"
+    },
+    "MasterInstanceProfile": {
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          {
+            "Ref": "MasterRole"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::InstanceProfile"
+    },
+    "PublicSlaveToPublicSlaveIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "NATInstance": {
+      "Properties": {
+        "SourceDestCheck": "false",
+        "NetworkInterfaces": [
+          {
+            "DeleteOnTermination": "true",
+            "SubnetId": {
+              "Ref": "PublicSubnet"
+            },
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "SlaveSecurityGroup"
+              },
+              {
+                "Ref": "MasterSecurityGroup"
+              },
+              {
+                "Ref": "AdminSecurityGroup"
+              }
+            ],
+            "AssociatePublicIpAddress": "true"
+          }
+        ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "NATAmi",
+            {
+              "Ref": "AWS::Region"
+            },
+            "default"
+          ]
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "InstanceType": "m3.medium"
+      },
+      "Type": "AWS::EC2::Instance",
+      "DependsOn": "GatewayToInternet"
+    },
+    "PublicSubnetRouteTableAssociation": {
+      "Properties": {
+        "SubnetId": {
+          "Ref": "PublicSubnet"
+        },
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        }
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation"
+    },
+    "MasterToMasterIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "MasterSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "MasterSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "PrivateSubnet": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "CidrBlock": {
+          "Fn::FindInMap": [
+            "Parameters",
+            "PrivateSubnetRange",
+            "default"
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Application",
+            "Value": {
+              "Ref": "AWS::StackName"
+            }
+          },
+          {
+            "Key": "Network",
+            "Value": "Private"
+          }
+        ]
+      },
+      "Type": "AWS::EC2::Subnet"
+    },
+    "PublicSlaveIngressSix": {
+      "Properties": {
+        "IpProtocol": "udp",
+        "FromPort": "5052",
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "CidrIp": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "PublicSlaveIngressFive": {
+      "Properties": {
+        "IpProtocol": "udp",
+        "FromPort": "23",
+        "ToPort": "5050",
+        "GroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        },
+        "CidrIp": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
     "SlaveLaunchConfig": {
       "Properties": {
-        "AssociatePublicIpAddress": "false",
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
@@ -2020,6 +1916,30 @@
                 "#cloud-config\n",
                 "\"coreos\":\n",
                 "  \"units\":\n",
+                "  - \"command\": |-\n",
+                "      start\n",
+                "    \"content\": |\n",
+                "      [Unit]\n",
+                "      Description=AWS Setup: Formats the /var/lib ephemeral drive\n",
+                "      Before=var-lib.mount dbus.service\n",
+                "      [Service]\n",
+                "      Type=oneshot\n",
+                "      RemainAfterExit=yes\n",
+                "      ExecStart=/bin/bash -c \"(blkid -t TYPE=ext4 | grep xvdb) || (/usr/sbin/mkfs.ext4 -F /dev/xvdb)\"\n",
+                "    \"name\": |-\n",
+                "      format-var-lib-ephemeral.service\n",
+                "  - \"command\": |-\n",
+                "      start\n",
+                "    \"content\": |\n",
+                "      [Unit]\n",
+                "      Description=AWS Setup: Mount /var/lib\n",
+                "      Before=dbus.service\n",
+                "      [Mount]\n",
+                "      What=/dev/xvdb\n",
+                "      Where=/var/lib\n",
+                "      Type=ext4\n",
+                "    \"name\": |-\n",
+                "      var-lib.mount\n",
                 "  - \"command\": |-\n",
                 "      stop\n",
                 "    \"mask\": !!bool |-\n",
@@ -2043,30 +1963,6 @@
                 "    \"name\": |-\n",
                 "      systemd-resolved.service\n",
                 "  - \"command\": |-\n",
-                "      start\n",
-                "    \"content\": |\n",
-                "      [Unit]\n",
-                "      Description=Formats the /var/lib ephemeral drive\n",
-                "      Before=var-lib.mount dbus.service\n",
-                "      [Service]\n",
-                "      Type=oneshot\n",
-                "      RemainAfterExit=yes\n",
-                "      ExecStart=/bin/bash -c \"(blkid -t TYPE=ext4 | grep xvdb) || (/usr/sbin/mkfs.ext4 -F /dev/xvdb)\"\n",
-                "    \"name\": |-\n",
-                "      format-var-lib-ephemeral.service\n",
-                "  - \"command\": |-\n",
-                "      start\n",
-                "    \"content\": |\n",
-                "      [Unit]\n",
-                "      Description=Mount /var/lib\n",
-                "      Before=dbus.service\n",
-                "      [Mount]\n",
-                "      What=/dev/xvdb\n",
-                "      Where=/var/lib\n",
-                "      Type=ext4\n",
-                "    \"name\": |-\n",
-                "      var-lib.mount\n",
-                "  - \"command\": |-\n",
                 "      restart\n",
                 "    \"name\": |-\n",
                 "      systemd-journald.service\n",
@@ -2089,7 +1985,7 @@
                 "      dcos-link-env.service\n",
                 "  - \"content\": |\n",
                 "      [Unit]\n",
-                "      Description=Download the DCOS\n",
+                "      Description=Pkgpanda: Download the DCOS\n",
                 "      After=network-online.target\n",
                 "      Wants=network-online.target\n",
                 "      ConditionPathExists=!/opt/mesosphere/\n",
@@ -2098,7 +1994,7 @@
                 "      Type=oneshot\n",
                 "      StandardOutput=journal+console\n",
                 "      StandardError=journal+console\n",
-                "      ExecStartPre=/usr/bin/curl --fail --retry 20 --continue-at - --location --silent --show-error --verbose --output /tmp/bootstrap.tar.xz https://downloads.mesosphere.com/dcos/EarlyAccess/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\n",
+                "      ExecStartPre=/usr/bin/curl -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://downloads.mesosphere.com/dcos/EarlyAccess/bootstrap/${BOOTSTRAP_ID}.bootstrap.tar.xz\n",
                 "      ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\n",
                 "      ExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\n",
                 "      ExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\n",
@@ -2108,7 +2004,7 @@
                 "      start\n",
                 "    \"content\": |\n",
                 "      [Unit]\n",
-                "      Description=Prep the Pkgpanda working directories for this host.\n",
+                "      Description=Pkgpanda: Specialize DCOS for this host.\n",
                 "      Requires=dcos-download.service\n",
                 "      After=dcos-download.service\n",
                 "      [Service]\n",
@@ -2129,7 +2025,7 @@
                 "      start\n",
                 "    \"content\": |-\n",
                 "      [Unit]\n",
-                "      Description=Signal CloudFormation Success\n",
+                "      Description=AWS Setup: Signal CloudFormation Success\n",
                 "      After=dcos.target\n",
                 "      Requires=dcos.target\n",
                 "      ConditionPathExists=!/var/lib/dcos-cfn-signal\n",
@@ -2159,7 +2055,7 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    BOOTSTRAP_ID=18d094b1648521b017622180e3a8e05788a81e80\n",
+                "    BOOTSTRAP_ID=a31ed4c418a9d0d55d5304171e1ac2fce4ddc797\n",
                 "  \"owner\": |-\n",
                 "    root\n",
                 "  \"path\": |-\n",
@@ -2167,7 +2063,7 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    [\"dcos-config--setup_63d4222216090c6d0f935d80dd068b63f3284a7c\", \"dcos-metadata--setup_63d4222216090c6d0f935d80dd068b63f3284a7c\"]\n",
+                "    [\"dcos-config--setup_ba37b469d77bdf76021c74cfd78c50dd8d091b90\", \"dcos-metadata--setup_ba37b469d77bdf76021c74cfd78c50dd8d091b90\"]\n",
                 "  \"owner\": |-\n",
                 "    root\n",
                 "  \"path\": |-\n",
@@ -2195,39 +2091,6 @@
                 "  \"permissions\": |-\n",
                 "    0644\n",
                 "- \"content\": |\n",
-                "    AWS_REGION=",
-                {
-                  "Ref": "AWS::Region"
-                },
-                "",
-                "\n",
-                "    AWS_STACK_ID=",
-                {
-                  "Ref": "AWS::StackId"
-                },
-                "",
-                "\n",
-                "    AWS_STACK_NAME=",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                "",
-                "\n",
-                "    AWS_IAM_MASTER_ROLE_NAME=",
-                {
-                  "Ref": "MasterRole"
-                },
-                "",
-                "\n",
-                "    AWS_IAM_SLAVE_ROLE_NAME=",
-                {
-                  "Ref": "SlaveRole"
-                },
-                "",
-                "\n",
-                "  \"path\": |-\n",
-                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
-                "- \"content\": |\n",
                 "    MESOS_CLUSTER=",
                 {
                   "Ref": "AWS::StackName"
@@ -2236,6 +2099,16 @@
                 "\n",
                 "  \"path\": |-\n",
                 "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/mesos-master-provider\n",
+                "- \"content\": |2\n",
+                "\n",
+                "    ADMINROUTER_ACTIVATE_AUTH_MODULE=",
+                {
+                  "Ref": "OAuthEnabled"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/adminrouter.env\n",
                 "- \"content\": |\n",
                 "    MASTER_SOURCE=exhibitor\n",
                 "    EXHIBITOR_ADDRESS=",
@@ -2272,6 +2145,55 @@
                 "\n",
                 "  \"path\": |-\n",
                 "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/exhibitor\n",
+                "- \"content\": |\n",
+                "    {\"uiConfiguration\":{\"plugins\":{\"banner\":{\"enabled\":false,\"backgroundColor\":\"#1E232F\",\"foregroundColor\":\"#FFFFFF\",\"headerTitle\":null,\"headerContent\":null,\"footerContent\":null,\"imagePath\":null,\"dismissible\":null},\"branding\":{\"enabled\":false},\"external-links\": {\"enabled\": false},\n",
+                "\n",
+                "    \"authentication\":{\"enabled\":false},\n",
+                "\n",
+                "    \"oauth\":{\"enabled\":",
+                {
+                  "Ref": "OAuthEnabled"
+                },
+                ",\"authHost\":\"https://dcos.auth0.com\"},",
+                "\n",
+                "\n",
+                "\n",
+                "    \"networking\":{\"enabled\":false},\"organization\":{\"enabled\":false},\"tracking\":{\"enabled\":true}}}}\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/ui-config.json\n",
+                "- \"content\": |\n",
+                "    AWS_REGION=",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_ID=",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_NAME=",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_MASTER_ROLE_NAME=",
+                {
+                  "Ref": "MasterRole"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_SLAVE_ROLE_NAME=",
+                {
+                  "Ref": "SlaveRole"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
                 "- \"content\": |-\n",
                 "    {}\n",
                 "  \"path\": |-\n",
@@ -2289,20 +2211,7 @@
         "IamInstanceProfile": {
           "Ref": "SlaveInstanceProfile"
         },
-        "BlockDeviceMappings": [
-          {
-            "VirtualName": "ephemeral0",
-            "DeviceName": "/dev/sdb"
-          }
-        ],
-        "KeyName": {
-          "Ref": "KeyName"
-        },
-        "SecurityGroups": [
-          {
-            "Ref": "SlaveSecurityGroup"
-          }
-        ],
+        "AssociatePublicIpAddress": "false",
         "InstanceType": {
           "Fn::FindInMap": [
             "Parameters",
@@ -2310,6 +2219,12 @@
             "default"
           ]
         },
+        "BlockDeviceMappings": [
+          {
+            "VirtualName": "ephemeral0",
+            "DeviceName": "/dev/sdb"
+          }
+        ],
         "ImageId": {
           "Fn::FindInMap": [
             "RegionToAmi",
@@ -2318,13 +2233,205 @@
             },
             "stable"
           ]
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "SlaveSecurityGroup"
+          }
+        ],
+        "KeyName": {
+          "Ref": "KeyName"
         }
       },
       "Type": "AWS::AutoScaling::LaunchConfiguration"
+    },
+    "OutboundNetworkAclEntry": {
+      "Properties": {
+        "RuleNumber": "100",
+        "RuleAction": "allow",
+        "Protocol": "-1",
+        "Egress": "true",
+        "PortRange": {
+          "To": "65535",
+          "From": "0"
+        },
+        "NetworkAclId": {
+          "Ref": "PublicNetworkAcl"
+        },
+        "CidrBlock": "0.0.0.0/0"
+      },
+      "Type": "AWS::EC2::NetworkAclEntry"
+    },
+    "PublicRoute": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "PublicRouteTable"
+        },
+        "GatewayId": {
+          "Ref": "InternetGateway"
+        }
+      },
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "GatewayToInternet"
+    },
+    "GatewayToInternet": {
+      "Properties": {
+        "VpcId": {
+          "Ref": "Vpc"
+        },
+        "InternetGatewayId": {
+          "Ref": "InternetGateway"
+        }
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "DependsOn": "InternetGateway"
+    },
+    "MasterToPublicSlaveIngress": {
+      "Properties": {
+        "IpProtocol": "-1",
+        "FromPort": "0",
+        "SourceSecurityGroupId": {
+          "Ref": "MasterSecurityGroup"
+        },
+        "ToPort": "65535",
+        "GroupId": {
+          "Ref": "PublicSlaveSecurityGroup"
+        }
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress"
+    },
+    "ExhibitorS3Bucket": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::S3::Bucket"
     }
   },
-  "Metadata": {
-    "TemplateGenerationDate": "2016-03-08 06:58:34.227110",
-    "DcosImageCommit": "d48ae9d5f101049804564ae54f75c2969a7a2cc0"
+  "Parameters": {
+    "PublicSlaveInstanceCount": {
+      "Description": "Required: Specify the number of public agent nodes or accept the default.",
+      "Default": "1",
+      "Type": "Number"
+    },
+    "OAuthEnabled": {
+      "Description": "\nEnable OAuth authentication",
+      "Default": "true",
+      "AllowedValues": [
+        "true",
+        "false"
+      ],
+      "Type": "String"
+    },
+    "AdminLocation": {
+      "Description": "Optional: Specify the IP range to whitelist for access to the admin zone. Must be a valid CIDR.",
+      "AllowedPattern": "^([0-9]+\\.){3}[0-9]+\\/[0-9]+$",
+      "Type": "String",
+      "MinLength": "9",
+      "Default": "0.0.0.0/0",
+      "ConstraintDescription": "must be a valid CIDR.",
+      "MaxLength": "18"
+    },
+    "AcceptEULA": {
+      "Description": "\nRequired: Read the Mesosphere EULA and indicate agreement: https://docs.mesosphere.com/community-edition-eula/.",
+      "AllowedValues": [
+        "Yes"
+      ],
+      "Type": "String"
+    },
+    "KeyName": {
+      "Description": "Required: Specify your AWS EC2 Key Pair.",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "SlaveInstanceCount": {
+      "Description": "Required: Specify the number of private agent nodes or accept the default.",
+      "Default": "5",
+      "Type": "Number"
+    }
+  },
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Mappings": {
+    "NATAmi": {
+      "eu-west-1": {
+        "default": "ami-3760b040"
+      },
+      "ap-northeast-1": {
+        "default": "ami-55c29e54"
+      },
+      "eu-central-1": {
+        "default": "ami-204c7a3d"
+      },
+      "ap-southeast-1": {
+        "default": "ami-b082dae2"
+      },
+      "sa-east-1": {
+        "default": "ami-b972dba4"
+      },
+      "us-east-1": {
+        "default": "ami-4c9e4b24"
+      },
+      "ap-southeast-2": {
+        "default": "ami-996402a3"
+      },
+      "us-west-1": {
+        "default": "ami-2b2b296e"
+      },
+      "us-west-2": {
+        "default": "ami-bb69128b"
+      }
+    },
+    "Parameters": {
+      "PublicSlaveInstanceType": {
+        "default": "m3.xlarge"
+      },
+      "VPCSubnetRange": {
+        "default": "10.0.0.0/16"
+      },
+      "PrivateSubnetRange": {
+        "default": "10.0.0.0/22"
+      },
+      "PublicSubnetRange": {
+        "default": "10.0.4.0/22"
+      },
+      "StackCreationTimeout": {
+        "default": "PT45M"
+      },
+      "MasterInstanceType": {
+        "default": "m3.xlarge"
+      },
+      "SlaveInstanceType": {
+        "default": "m3.xlarge"
+      }
+    },
+    "RegionToAmi": {
+      "us-gov-west-1": {
+        "stable": "ami-05bc0164"
+      },
+      "eu-west-1": {
+        "stable": "ami-55d20b26"
+      },
+      "ap-northeast-1": {
+        "stable": "ami-84e0c7ea"
+      },
+      "eu-central-1": {
+        "stable": "ami-fdd4c791"
+      },
+      "ap-southeast-1": {
+        "stable": "ami-da67a0b9"
+      },
+      "sa-east-1": {
+        "stable": "ami-154af179"
+      },
+      "us-east-1": {
+        "stable": "ami-37bdc15d"
+      },
+      "ap-southeast-2": {
+        "stable": "ami-f35b0590"
+      },
+      "us-west-1": {
+        "stable": "ami-27553a47"
+      },
+      "us-west-2": {
+        "stable": "ami-00ebfc61"
+      }
+    }
   }
 }
