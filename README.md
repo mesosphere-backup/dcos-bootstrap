@@ -99,7 +99,7 @@ infrastructure changes.
     make sync
 
 
-[AWS setup guide]: https://docs.mesosphere.com/install/awscluster/
+[AWS setup guide]: https://docs.mesosphere.com/administration/installing/cloud/aws/
 [DCOS Enterprise Edition]: https://mesosphere.com/product/
 [Mesosphere DCOS Community Edition EULA]: https://docs.mesosphere.com/community-edition-eula/
 [dcos tool]: https://docs.mesosphere.com/using/cli/
