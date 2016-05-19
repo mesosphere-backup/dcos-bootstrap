@@ -17,9 +17,11 @@ the [Mesosphere DCOS Community Edition EULA].
 
 Clone this repository and run one of the Make targets as documented below:
 
-    git clone https://github.com/mlafeldt/dcos-bootstrap
-    cd dcos-bootstrap/
-    make ...
+```bash
+git clone https://github.com/dcos-labs/dcos-bootstrap
+cd dcos-bootstrap/
+make ...
+```
 
 Besides Make, you will also need Python and virtualenv.
 
