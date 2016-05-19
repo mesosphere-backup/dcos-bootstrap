@@ -2,15 +2,12 @@
 
 **[Read this blog post to learn more about DCOS and dcos-bootstrap!][blog]**
 
-The project's goal is to get you started with the *Mesosphere DCOS Community
-Edition* on AWS with as few steps as possible. Rather than following the
-official [AWS setup guide], you can use the provided tooling to launch a DCOS
-cluster with a single command -- and delete it just as easily.
+The project's goal is to get you started with *Mesosphere DC/OS* on AWS with as
+few steps as possible. Rather than following the official [AWS setup guide], you
+can use the provided tooling to launch a DCOS cluster with a single command --
+and delete it just as easily.
 
 Note: Nothing here is meant to be used in production; that's what [Mesosphere Enterprise DC/OS] is for.
-
-Disclaimer: If you use this project, you are agreeing to stick to the rules of
-the [Mesosphere DCOS Community Edition EULA].
 
 ## Installation
 
@@ -102,7 +99,6 @@ infrastructure changes.
 
 [AWS setup guide]: https://docs.mesosphere.com/administration/installing/cloud/aws/
 [Mesosphere Enterprise DC/OS]: https://mesosphere.com/enterprise/
-[Mesosphere DCOS Community Edition EULA]: https://docs.mesosphere.com/community-edition-eula/
 [dcos tool]: https://docs.mesosphere.com/using/cli/
 [blog]: https://mlafeldt.github.io/blog/getting-started-with-the-mesosphere-dcos/
 [Kubernetes]: http://kubernetes.io/
