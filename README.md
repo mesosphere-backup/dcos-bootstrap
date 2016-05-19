@@ -2,10 +2,10 @@
 
 **[Read this blog post to learn more about DC/OS and dcos-bootstrap!][blog]**
 
-The project's goal is to get you started with *Mesosphere DC/OS* on AWS with as
-few steps as possible. Rather than following the official [AWS setup guide], you
-can use the provided tooling to launch a DC/OS cluster with a single command --
-and delete it just as easily.
+The project's goal is to get you started with [Mesosphere DC/OS] on AWS with as
+few steps as possible. Rather than following the [AWS DC/OS Installation Guide],
+you can use the provided tooling to launch a DC/OS cluster with a single command
+-- and delete it just as easily.
 
 Note: Nothing here is meant to be used in production; that's what [Mesosphere Enterprise DC/OS] is for.
 
@@ -96,9 +96,9 @@ infrastructure changes.
 
     make sync
 
-
-[AWS setup guide]: https://docs.mesosphere.com/administration/installing/cloud/aws/
+[Mesosphere DC/OS]: https://dcos.io/
+[AWS DC/OS Installation Guide]: https://dcos.io/docs/latest/administration/installing/cloud/aws/
 [Mesosphere Enterprise DC/OS]: https://mesosphere.com/enterprise/
-[dcos tool]: https://docs.mesosphere.com/using/cli/
+[dcos tool]: https://dcos.io/docs/latest/usage/cli/
 [blog]: https://mlafeldt.github.io/blog/getting-started-with-the-mesosphere-dcos/
 [Kubernetes]: http://kubernetes.io/
