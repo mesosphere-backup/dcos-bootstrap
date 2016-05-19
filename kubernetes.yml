@@ -2,12 +2,12 @@
   connection: local
   gather_facts: False
   tasks:
-    - name: Get list of installed DCOS packages
+    - name: Get list of installed DC/OS packages
       command: ./dcos package list
       register: package_list
       ignore_errors: True
 
-    - name: Update DCOS package index
+    - name: Update DC/OS package index
       command: ./dcos package update
       when: "'/kubernetes' not in package_list.stdout"
 
@@ -28,7 +28,7 @@
           {"kubernetes": {"etcd-mesos-framework-name": "etcd"}}
         dest: tmp/kubernetes-options.json
 
-    - name: Install Kubernetes on DCOS
+    - name: Install Kubernetes on DC/OS
       command: ./dcos package install --yes --options=tmp/kubernetes-options.json kubernetes
       when: "'/kubernetes' not in package_list.stdout"
 

@@ -10,7 +10,7 @@
         key_material: "{{ item }}"
       with_file: dcos_admin_key
 
-    - name: Create Mesosphere DCOS cluster
+    - name: Create Mesosphere DC/OS cluster
       cloudformation:
         stack_name: "{{ dcos_cluster_name }}"
         state: present
@@ -27,14 +27,14 @@
     - set_fact:
         dcos_url: "http://{{ dcos_stack.stack_outputs.DnsAddress }}"
 
-    - name: Create tmp folder for DCOS CLI
+    - name: Create tmp folder for DC/OS CLI
       file: path=tmp/.dcos state=directory mode=0755
 
-    - name: Generate DCOS CLI configuration
+    - name: Generate DC/OS CLI configuration
       template:
         src: templates/dcos.toml.j2
         dest: tmp/.dcos/dcos.toml
 
-    - name: Validate DCOS CLI configuration
+    - name: Validate DC/OS CLI configuration
       command: ./dcos config validate
       changed_when: False
