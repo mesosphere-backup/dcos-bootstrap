@@ -1,5 +1,7 @@
 # Install Mesosphere DC/OS on AWS using a single command
 
+[![Build Status](https://travis-ci.org/dcos-labs/dcos-bootstrap.svg?branch=master)](https://travis-ci.org/dcos-labs/dcos-bootstrap)
+
 **[Read this blog post to learn more about DC/OS and dcos-bootstrap!][blog]**
 
 The project's goal is to get you started with [Mesosphere DC/OS] on AWS with as
