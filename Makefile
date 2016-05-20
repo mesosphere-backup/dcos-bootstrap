@@ -32,7 +32,7 @@ test: venv
 	venv/bin/ansible-playbook --syntax-check *.yml
 
 dashboard:
-	@open $$(./dcos config show core.dcos_url)
+	@open $$(terraform output dcos_url)
 
 venv:
 	virtualenv venv

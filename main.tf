@@ -13,7 +13,7 @@ resource "aws_cloudformation_stack" "dcos" {
   capabilities = ["CAPABILITY_IAM"]
 
   parameters {
-    KeyName                  = "dcos_admin"
+    KeyName                  = "${aws_key_pair.dcos.key_name}"
     AdminLocation            = "${var.dcos_admin_location}"
     OAuthEnabled             = "${var.dcos_oauth_enabled}"
     SlaveInstanceCount       = "${var.dcos_worker_nodes}"
