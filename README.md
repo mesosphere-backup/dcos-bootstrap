@@ -47,12 +47,12 @@ There are a couple of settings you might want to change:
 * `DCOS_OAUTH_ENABLED` - Enable OAuth authentication
 * `DCOS_WORKER_NODES` - Number of worker nodes to launch
 * `DCOS_PUBLIC_WORKER_NODES` - Number of public worker nodes to launch
-* `DCOS_CHANNEL` - Launch `stable` or `EarlyAccess` release of DC/OS
+* `DCOS_CHANNEL` - Select DC/OS release channel (`EarlyAccess` or `testing/master`)
 * `DCOS_MASTER_SETUP` - Launch DC/OS in `single-master` or `multi-master` HA setup
 
 Here's how to specify different settings:
 
-    make bootstrap DCOS_CLUSTER_NAME=dcos-test DCOS_CHANNEL=EarlyAccess DCOS_WORKER_NODES=10
+    make bootstrap DCOS_CLUSTER_NAME=dcos-test DCOS_WORKER_NODES=10
 
 ### Open DC/OS web interface
 
@@ -84,9 +84,9 @@ This will download and output the current DC/OS CloudFormation template from S3:
 
     make show-template
 
-To inspect the multi-master template:
+To inspect a different template:
 
-    make show-template DCOS_MASTER_SETUP=multi-master
+    make show-template DCOS_CHANNEL=testing/master DCOS_MASTER_SETUP=multi-master
 
 [Mesosphere DC/OS]: https://dcos.io/
 [AWS DC/OS Installation Guide]: https://dcos.io/docs/latest/administration/installing/cloud/aws/
