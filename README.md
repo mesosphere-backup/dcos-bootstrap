@@ -67,17 +67,6 @@ manage your cluster. The script is a convenience wrapper around the [dcos tool]
 provided by Mesosphere. Run `./dcos` without parameters to get a list of all
 available commands.
 
-### Install Kubernetes
-
-This will deploy [Kubernetes] on top of DC/OS:
-
-    make kubernetes
-
-Afterwards, run the `kubectl` subcommand to control the Kubernetes cluster
-manager. For example:
-
-    ./dcos kubectl run nginx --image=nginx
-
 ### Destroy DC/OS cluster
 
 When you no longer need your cluster, you can delete it this way:
@@ -101,4 +90,3 @@ infrastructure changes.
 [Mesosphere Enterprise DC/OS]: https://mesosphere.com/enterprise/
 [dcos tool]: https://dcos.io/docs/latest/usage/cli/
 [blog]: https://mlafeldt.github.io/blog/getting-started-with-the-mesosphere-dcos/
-[Kubernetes]: http://kubernetes.io/
