@@ -3,9 +3,10 @@ AWS_REGION ?= eu-west-1
 DCOS_CLUSTER_NAME        ?= dcos
 DCOS_ADMIN_KEY           ?= ~/.ssh/id_rsa.pub
 DCOS_ADMIN_LOCATION      ?= 0.0.0.0/0
+DCOS_OAUTH_ENABLED       ?= true
 DCOS_WORKER_NODES        ?= 5
 DCOS_PUBLIC_WORKER_NODES ?= 1
-DCOS_CHANNEL             ?= stable
+DCOS_CHANNEL             ?= EarlyAccess
 DCOS_MASTER_SETUP        ?= single-master
 
 bootstrap: venv
@@ -14,6 +15,7 @@ bootstrap: venv
 		-e dcos_cluster_name="$(DCOS_CLUSTER_NAME)" \
 		-e dcos_admin_key="$(DCOS_ADMIN_KEY)" \
 		-e dcos_admin_location="$(DCOS_ADMIN_LOCATION)" \
+		-e dcos_oauth_enabled="$(DCOS_OAUTH_ENABLED)" \
 		-e dcos_worker_nodes="$(DCOS_WORKER_NODES)" \
 		-e dcos_public_worker_nodes="$(DCOS_PUBLIC_WORKER_NODES)" \
 		-e dcos_channel="$(DCOS_CHANNEL)" \
@@ -39,10 +41,8 @@ venv:
 clean:
 	$(RM) -r tmp venv
 
-TEMPLATES_ROOT = https://s3.amazonaws.com/downloads.mesosphere.io/dcos
+TEMPLATES_ROOT = https://s3-us-west-2.amazonaws.com/downloads.dcos.io/dcos
 sync:
-	curl -f -s $(TEMPLATES_ROOT)/stable/cloudformation/single-master.cloudformation.json | jq . >cloudformation/stable/single-master.json
-	curl -f -s $(TEMPLATES_ROOT)/stable/cloudformation/multi-master.cloudformation.json | jq . >cloudformation/stable/multi-master.json
 	curl -f -s $(TEMPLATES_ROOT)/EarlyAccess/cloudformation/single-master.cloudformation.json | jq . >cloudformation/earlyaccess/single-master.json
 	curl -f -s $(TEMPLATES_ROOT)/EarlyAccess/cloudformation/multi-master.cloudformation.json | jq . >cloudformation/earlyaccess/multi-master.json
 	-git commit -m 'Sync CloudFormation templates with upstream' cloudformation/

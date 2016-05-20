@@ -44,6 +44,7 @@ There are a couple of settings you might want to change:
 * `DCOS_CLUSTER_NAME` - Name of DC/OS cluster (and CloudFormation stack)
 * `DCOS_ADMIN_KEY` - Path to public SSH key to be added to cluster instances
 * `DCOS_ADMIN_LOCATION` - IP range to whitelist for admin access
+* `DCOS_OAUTH_ENABLED` - Enable OAuth authentication
 * `DCOS_WORKER_NODES` - Number of worker nodes to launch
 * `DCOS_PUBLIC_WORKER_NODES` - Number of public worker nodes to launch
 * `DCOS_CHANNEL` - Launch `stable` or `EarlyAccess` release of DC/OS
