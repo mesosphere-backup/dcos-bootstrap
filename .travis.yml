@@ -1,0 +1,13 @@
+language: python
+
+sudo: false
+
+python: 2.7
+
+install: true
+
+script: make test
+
+branches:
+  only:
+    - master
