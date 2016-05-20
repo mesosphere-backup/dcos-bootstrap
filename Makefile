@@ -41,10 +41,7 @@ venv:
 clean:
 	$(RM) -r tmp venv
 
-TEMPLATES_ROOT = https://s3-us-west-2.amazonaws.com/downloads.dcos.io/dcos
-sync:
-	curl -f -s $(TEMPLATES_ROOT)/EarlyAccess/cloudformation/single-master.cloudformation.json | jq . >cloudformation/earlyaccess/single-master.json
-	curl -f -s $(TEMPLATES_ROOT)/EarlyAccess/cloudformation/multi-master.cloudformation.json | jq . >cloudformation/earlyaccess/multi-master.json
-	-git commit -m 'Sync CloudFormation templates with upstream' cloudformation/
+show-template:
+	@curl -f -s https://downloads.dcos.io/dcos/$(DCOS_CHANNEL)/cloudformation/$(DCOS_MASTER_SETUP).cloudformation.json | jq .
 
 .PHONY: venv

@@ -78,13 +78,15 @@ In case you changed the default cluster name:
 
     make destroy DCOS_CLUSTER_NAME=...
 
-### Sync CloudFormation templates
+### Inspect CloudFormation templates
 
-This will download the current CloudFormation templates provided by Mesosphere
-from S3 to `cloudformation/`. Useful for inspection and for keeping track of
-infrastructure changes.
+This will download and output the current DC/OS CloudFormation template from S3:
 
-    make sync
+    make show-template
+
+To inspect the multi-master template:
+
+    make show-template DCOS_MASTER_SETUP=multi-master
 
 [Mesosphere DC/OS]: https://dcos.io/
 [AWS DC/OS Installation Guide]: https://dcos.io/docs/latest/administration/installing/cloud/aws/
