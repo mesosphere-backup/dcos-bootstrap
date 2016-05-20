@@ -44,14 +44,15 @@ There are a couple of settings you might want to change:
 * `DCOS_CLUSTER_NAME` - Name of DC/OS cluster (and CloudFormation stack)
 * `DCOS_ADMIN_KEY` - Path to public SSH key to be added to cluster instances
 * `DCOS_ADMIN_LOCATION` - IP range to whitelist for admin access
+* `DCOS_OAUTH_ENABLED` - Enable OAuth authentication
 * `DCOS_WORKER_NODES` - Number of worker nodes to launch
 * `DCOS_PUBLIC_WORKER_NODES` - Number of public worker nodes to launch
-* `DCOS_CHANNEL` - Launch `stable` or `EarlyAccess` release of DC/OS
+* `DCOS_CHANNEL` - Select DC/OS release channel (`EarlyAccess` or `testing/master`)
 * `DCOS_MASTER_SETUP` - Launch DC/OS in `single-master` or `multi-master` HA setup
 
 Here's how to specify different settings:
 
-    make bootstrap DCOS_CLUSTER_NAME=dcos-test DCOS_CHANNEL=EarlyAccess DCOS_WORKER_NODES=10
+    make bootstrap DCOS_CLUSTER_NAME=dcos-test DCOS_WORKER_NODES=10
 
 ### Open DC/OS web interface
 
@@ -77,13 +78,15 @@ In case you changed the default cluster name:
 
     make destroy DCOS_CLUSTER_NAME=...
 
-### Sync CloudFormation templates
+### Inspect CloudFormation templates
 
-This will download the current CloudFormation templates provided by Mesosphere
-from S3 to `cloudformation/`. Useful for inspection and for keeping track of
-infrastructure changes.
+This will download and output the current DC/OS CloudFormation template from S3:
 
-    make sync
+    make show-template
+
+To inspect a different template:
+
+    make show-template DCOS_CHANNEL=testing/master DCOS_MASTER_SETUP=multi-master
 
 [Mesosphere DC/OS]: https://dcos.io/
 [AWS DC/OS Installation Guide]: https://dcos.io/docs/latest/administration/installing/cloud/aws/
