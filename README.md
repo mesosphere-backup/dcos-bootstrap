@@ -90,6 +90,10 @@ To inspect a different template:
 
     make show-template DCOS_CHANNEL=testing/master DCOS_MASTER_SETUP=multi-master
 
+## Author
+
+This project is being developed by [Mathias Lafeldt](https://twitter.com/mlafeldt).
+
 [Mesosphere DC/OS]: https://dcos.io/
 [AWS DC/OS Installation Guide]: https://dcos.io/docs/latest/administration/installing/cloud/aws/
 [Mesosphere Enterprise DC/OS]: https://mesosphere.com/enterprise/
