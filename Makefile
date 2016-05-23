@@ -34,14 +34,8 @@ test:
 dashboard:
 	@open $$(terraform output dcos_url)
 
-venv:
-	virtualenv venv
-	venv/bin/pip install -q -r requirements.txt
-
 clean:
-	$(RM) -r tmp venv .terraform*
+	$(RM) -r .terraform*
 
 show-template:
 	@curl -f -s https://downloads.dcos.io/dcos/$(DCOS_CHANNEL)/cloudformation/$(DCOS_MASTER_SETUP).cloudformation.json | jq .
-
-.PHONY: venv
