@@ -1,9 +1,5 @@
 #!/bin/bash
 # Small wrapper around the DC/OS command-line tool
-
-# Trick dcos into using our tmp folder for everything. Unfortunately, setting
-# DCOS_CONFIG doesn't seem to work for subcommands, which still get installed
-# to $HOME. This is the workaround.
-export HOME="$PWD/tmp"
-
-exec venv/bin/dcos "$@"
+set -e
+DCOS_URL=$(terraform output dcos_url)
+exec docker run -it --rm -e DCOS_URL="$DCOS_URL" mlafeldt/dcoscli "$@"

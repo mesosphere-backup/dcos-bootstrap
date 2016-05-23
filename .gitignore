@@ -1,4 +1,2 @@
-*.pyc
-*.retry
-/tmp/
-/venv/
+terraform.tfstate
+terraform.tfstate.backup
