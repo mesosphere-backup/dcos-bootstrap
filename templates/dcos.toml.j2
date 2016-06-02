@@ -3,3 +3,6 @@ dcos_url = "{{ dcos_url }}"
 reporting = false
 ssl_verify = "false"
 timeout = 5
+{% if dcos_auth_token %}
+dcos_acs_token = "{{ dcos_auth_token }}"
+{% endif %}
