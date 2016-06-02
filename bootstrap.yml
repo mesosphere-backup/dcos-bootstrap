@@ -10,7 +10,7 @@
         key_material: "{{ item }}"
       with_file: "{{ dcos_admin_key }}"
 
-    - name: Create Mesosphere DC/OS cluster
+    - name: Create DC/OS cluster
       cloudformation:
         stack_name: "{{ dcos_cluster_name }}"
         state: present

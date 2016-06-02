@@ -1,15 +1,13 @@
-# Install Mesosphere DC/OS on AWS using a single command
+# Install DC/OS on AWS using a single command
 
 [![Build Status](https://travis-ci.org/dcos-labs/dcos-bootstrap.svg?branch=master)](https://travis-ci.org/dcos-labs/dcos-bootstrap)
 
 **[Read this blog post to learn more about DC/OS and dcos-bootstrap!][blog]**
 
-The project's goal is to get you started with [Mesosphere DC/OS] on AWS with as
-few steps as possible. Rather than following the [AWS DC/OS Installation Guide],
-you can use the provided tooling to launch a DC/OS cluster with a single command
--- and delete it just as easily.
-
-Note: Nothing here is meant to be used in production; that's what [Mesosphere Enterprise DC/OS] is for.
+The project's goal is to get you started with [DC/OS] on AWS with as few steps
+as possible. Rather than following the [AWS DC/OS Installation Guide], you can
+use the provided tooling to launch a DC/OS cluster with a single command -- and
+delete it just as easily.
 
 ## Installation
 
@@ -36,8 +34,7 @@ environment variables first:
 
 ### Bootstrap DC/OS cluster
 
-This will set up a working Mesosphere DC/OS cluster on AWS using Ansible and
-CloudFormation:
+This will set up a working DC/OS cluster on AWS using Ansible and CloudFormation:
 
     make bootstrap
 
@@ -66,9 +63,8 @@ your browser:
 ### Use DC/OS CLI
 
 After bootstrapping DC/OS, you can also use the `./dcos` script to remotely
-manage your cluster. The script is a convenience wrapper around the [dcos tool]
-provided by Mesosphere. Run `./dcos` without parameters to get a list of all
-available commands.
+manage your cluster. The script is a convenience wrapper around the [dcos tool].
+Run `./dcos` without parameters to get a list of all available commands.
 
 ### Destroy DC/OS cluster
 
@@ -94,8 +90,7 @@ To inspect a different template:
 
 This project is being developed by [Mathias Lafeldt](https://twitter.com/mlafeldt).
 
-[Mesosphere DC/OS]: https://dcos.io/
+[DC/OS]: https://dcos.io/
 [AWS DC/OS Installation Guide]: https://dcos.io/docs/latest/administration/installing/cloud/aws/
-[Mesosphere Enterprise DC/OS]: https://mesosphere.com/enterprise/
 [dcos tool]: https://dcos.io/docs/latest/usage/cli/
 [blog]: https://mlafeldt.github.io/blog/getting-started-with-the-mesosphere-dcos/

@@ -8,7 +8,7 @@
         mode: delete
         region: "{{ aws_region }}"
 
-    - name: Delete Mesosphere DC/OS cluster
+    - name: Delete DC/OS cluster
       cloudformation:
         stack_name: "{{ dcos_cluster_name }}"
         state: absent
