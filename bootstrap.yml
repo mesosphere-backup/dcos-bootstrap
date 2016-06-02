@@ -30,6 +30,15 @@
     - name: Create tmp folder for DC/OS CLI
       file: path=tmp/.dcos state=directory mode=0755
 
+    - name: Get current auth token
+      command: ./dcos config show core.dcos_acs_token
+      ignore_errors: True
+      changed_when: False
+      register: current_auth_token
+
+    - set_fact:
+        dcos_auth_token: "{{ current_auth_token.stdout }}"
+
     - name: Generate DC/OS CLI configuration
       template:
         src: templates/dcos.toml.j2
